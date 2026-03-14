@@ -69,18 +69,18 @@ export default function ActivityPage() {
 
   return (
     <div className="flex h-full">
-      <aside className="w-40 py-5 px-4 bg-white border-r border-[#e2e4e9] shrink-0">
+      <aside className="w-40 py-5 px-4 bg-surface border-r border-line-strong shrink-0">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-[#6b7280] mb-2.5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mb-2.5">
             Filters (By Time)
           </p>
           {TIME_FILTERS.map(({ id, label }) => (
-            <label key={id} className="flex items-center gap-2 text-[13px] text-[#374151] mb-2 cursor-pointer">
+            <label key={id} className="flex items-center gap-2 text-[13px] text-body mb-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={timeFilter === id}
                 onChange={() => setTimeFilter(id)}
-                className="cursor-pointer accent-[#7c5cbf]"
+                className="cursor-pointer accent-accent"
               />
               {label}
             </label>
@@ -95,38 +95,38 @@ export default function ActivityPage() {
             placeholder="Search activity by Rep Name, Date, or Description"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full py-2 pl-3 pr-9 border border-[#d1d5db] rounded-md text-[13px] bg-white text-[#1a1a2e] outline-none focus:border-[#7c5cbf] focus:shadow-[0_0_0_2px_rgba(124,92,191,0.15)]"
+            className="w-full py-2 pl-3 pr-9 border border-line-input rounded-md text-[13px] bg-surface text-brand outline-none focus:border-accent focus:shadow-[0_0_0_2px_rgba(124,92,191,0.15)]"
           />
           <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none">🔍</span>
         </div>
 
-        <h2 className="text-[15px] font-semibold text-[#1a1a2e] mb-3">Activity Log</h2>
+        <h2 className="text-[15px] font-semibold text-brand mb-3">Activity Log</h2>
 
-        {loading && <p className="text-[13px] text-[#6b7280] py-3">Loading...</p>}
-        {error && <p className="text-[13px] text-[#dc2626] py-3">{error}</p>}
+        {loading && <p className="text-[13px] text-muted py-3">Loading...</p>}
+        {error && <p className="text-[13px] text-error py-3">{error}</p>}
 
         {!loading && !error && (
-          <table className="w-full border-collapse bg-white rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
+          <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
             <thead>
-              <tr className="bg-[#f9fafb] border-b-2 border-[#e5e7eb]">
-                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-[#6b7280]">Rep</th>
-                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-[#6b7280]">Date</th>
-                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-[#6b7280]">Description</th>
+              <tr className="bg-surface-alt border-b-2 border-line-header">
+                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">Rep</th>
+                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">Date</th>
+                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">Description</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-3.5 py-2.5 text-[13px] text-center text-[#9ca3af] italic">
+                  <td colSpan={3} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
                     No activity found.
                   </td>
                 </tr>
               ) : (
                 filtered.map((a) => (
                   <tr key={a._id} className="group">
-                    <td className="px-3.5 py-2.5 text-[13px] text-[#374151] border-b border-[#f3f4f6] group-last:border-b-0 group-hover:bg-[#fafafa]">{a.csr_id}</td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-[#374151] border-b border-[#f3f4f6] group-last:border-b-0 group-hover:bg-[#fafafa]">{formatDate(a.timestamp)}</td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-[#374151] border-b border-[#f3f4f6] group-last:border-b-0 group-hover:bg-[#fafafa]">{getDescription(a)}</td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">{a.csr_id}</td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">{formatDate(a.timestamp)}</td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">{getDescription(a)}</td>
                   </tr>
                 ))
               )}

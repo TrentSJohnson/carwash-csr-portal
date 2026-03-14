@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+@theme {
+  /* Brand */
+  --color-brand: #1a1a2e;       /* dark navy — header, sidebar, primary text */
+  --color-accent: #7c5cbf;      /* purple — active states, focus */
+  --color-accent-dim: #9999b8;  /* muted purple-gray — inactive nav */
+  --color-accent-ghost: #e0daea;/* light lavender — spinner track */
+
+  /* Surfaces */
+  --color-surface: #ffffff;
+  --color-surface-alt: #f9fafb;   /* table header */
+  --color-surface-hover: #fafafa; /* row hover */
+  --color-page: #f4f5f7;          /* page background */
+
+  /* Text */
+  --color-body: #374151;    /* body/table text */
+  --color-muted: #6b7280;   /* labels, secondary headers */
+  --color-faint: #9ca3af;   /* placeholders, empty state */
+  --color-dim: #c8c8d8;     /* nav secondary text */
+  --color-error: #dc2626;   /* errors */
+
+  /* Borders */
+  --color-line: #f3f4f6;          /* row dividers */
+  --color-line-strong: #e2e4e9;   /* card/sidebar borders */
+  --color-line-input: #d1d5db;    /* input borders */
+  --color-line-header: #e5e7eb;   /* table header border */
+
+  /* Status badges */
+  --color-status-failed-bg: #fee2e2;
+  --color-status-failed-text: #dc2626;
+  --color-status-success-bg: #dcfce7;
+  --color-status-success-text: #16a34a;
+  --color-status-pending-bg: #fef9c3;
+  --color-status-pending-text: #b45309;
+}
+
 html, body, #root {
   height: 100%;
 }
@@ -7,7 +42,7 @@ html, body, #root {
 body {
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 14px;
-  background: #f4f5f7;
-  color: #1a1a2e;
+  background: var(--color-page);
+  color: var(--color-brand);
   -webkit-font-smoothing: antialiased;
 }
