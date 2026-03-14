@@ -1,34 +1,41 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require('cors');
+import createError from 'http-errors';
+import express from 'express';
+import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import cors from 'cors';
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+import membersRouter from './routes/members.js';
+import plansRouter from './routes/plans.js';
+import vehiclesRouter from './routes/vehicles.js';
+import subscriptionsRouter from './routes/subscriptions.js';
+import transactionsRouter from './routes/transactions.js';
+import activitiesRouter from './routes/activities.js';
 
-var app = express();
+mongoose.connect(process.env.MONGO_API_CONNECTION_STRING)
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+const app = express();
 
 app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/ping', function(req, res) {
   res.json({ message: 'pong' });
 });
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/api/members', membersRouter);
+app.use('/api/plans', plansRouter);
+app.use('/api/vehicles', vehiclesRouter);
+app.use('/api/subscriptions', subscriptionsRouter);
+app.use('/api/transactions', transactionsRouter);
+app.use('/api/activities', activitiesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -37,13 +44,10 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  res.status(err.status || 500).json({
+    message: err.message,
+    ...(req.app.get('env') === 'development' && { stack: err.stack }),
+  });
 });
 
-module.exports = app;
+export default app;
