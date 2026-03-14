@@ -2,6 +2,11 @@ require('dotenv').config();
 
 var createError = require('http-errors');
 var express = require('express');
+var mongoose = require('mongoose');
+
+mongoose.connect(process.env.MONGO_API_CONNECTION_STRING)
+  .then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('MongoDB connection error:', err));
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
