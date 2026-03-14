@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "yarn",
   "scripts": {
     "start": "node ./bin/www.js"
   },
@@ -11,10 +12,9 @@
     "cors": "^2.8.6",
     "debug": "~2.6.9",
     "dotenv": "^17.3.1",
-    "express": "~4.16.1",
+    "express": "^5.2.1",
     "http-errors": "~1.6.3",
-    "jade": "~1.11.0",
     "mongoose": "^9.3.0",
-    "morgan": "~1.9.1"
+    "morgan": "^1.10.1"
   }
 }
