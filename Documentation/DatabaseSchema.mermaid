@@ -1,0 +1,62 @@
+erDiagram
+    MEMBER ||--o{ SUBSCRIPTION : has
+    PLAN ||--o{ SUBSCRIPTION : "defines terms for"
+    VEHICLE ||--|| SUBSCRIPTION : "assigned to"
+    MEMBER ||--o{ VEHICLE : owns
+    MEMBER ||--o{ TRANSACTION : pays
+    MEMBER ||--o{ ACTIVITY : "modified by"
+
+    SUBSCRIPTION ||--o{ TRANSACTION : "billed for"
+
+    MEMBER {
+        string member_id PK
+        string first_name
+        string last_name
+        string email
+        string phone
+        string account_status
+    }
+
+    PLAN {
+        string plan_id PK
+        string plan_name
+        float monthly_price
+        string features
+    }
+
+    VEHICLE {
+        string vehicle_id PK
+        string member_id FK
+        string license_plate
+        string state
+        string make_model
+        string rfid_tag_id
+    }
+
+    SUBSCRIPTION {
+        string subscription_id PK
+        string member_id FK
+        string plan_id FK
+        string vehicle_id FK
+        datetime start_date
+        datetime next_billing_date
+        string status "Active, Paused, Overdue, Canceled"
+    }
+
+    TRANSACTION {
+        string transaction_id PK
+        string member_id FK
+        string subscription_id FK
+        datetime timestamp
+        float amount
+        string status
+    }
+
+    ACTIVITY {
+        string log_id PK
+        string member_id FK
+        string csr_id
+        datetime timestamp
+        string action_taken "Transfer, Edit Info, Cancel Sub"
+        string notes
+    }
