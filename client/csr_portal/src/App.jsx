@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -6,6 +6,13 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/ping`)
+      .then((res) => res.json())
+      .then((data) => console.log('Server ping:', data.message))
+      .catch((err) => console.error('Server ping failed:', err))
+  }, [])
 
   return (
     <>
