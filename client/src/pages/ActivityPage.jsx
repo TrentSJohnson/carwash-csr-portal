@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getActivities } from '../services/api'
-import './ActivityPage.css'
 
 const TIME_FILTERS = [
   { id: '24h', label: 'Last 24 Hrs' },
@@ -69,16 +68,19 @@ export default function ActivityPage() {
   }, [activities, timeFilter, search])
 
   return (
-    <div className="activity-page">
-      <aside className="activity-sidebar">
-        <div className="filter-group">
-          <p className="filter-title">Filters (By Time)</p>
+    <div className="flex h-full">
+      <aside className="w-40 py-5 px-4 bg-surface border-r border-line-strong shrink-0">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mb-2.5">
+            Filters (By Time)
+          </p>
           {TIME_FILTERS.map(({ id, label }) => (
-            <label key={id} className="filter-option">
+            <label key={id} className="flex items-center gap-2 text-[13px] text-body mb-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={timeFilter === id}
                 onChange={() => setTimeFilter(id)}
+                className="cursor-pointer accent-accent"
               />
               {label}
             </label>
@@ -86,42 +88,45 @@ export default function ActivityPage() {
         </div>
       </aside>
 
-      <section className="activity-content">
-        <div className="activity-search">
+      <section className="flex-1 p-5 px-6 overflow-auto">
+        <div className="relative mb-5">
           <input
             type="text"
             placeholder="Search activity by Rep Name, Date, or Description"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            className="w-full py-2 pl-3 pr-9 border border-line-input rounded-md text-[13px] bg-surface text-brand outline-none focus:border-accent focus:shadow-[0_0_0_2px_rgba(124,92,191,0.15)]"
           />
-          <span className="search-icon">🔍</span>
+          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none">🔍</span>
         </div>
 
-        <h2 className="activity-log-title">Activity Log</h2>
+        <h2 className="text-[15px] font-semibold text-brand mb-3">Activity Log</h2>
 
-        {loading && <p className="activity-status">Loading...</p>}
-        {error && <p className="activity-status activity-status--error">{error}</p>}
+        {loading && <p className="text-[13px] text-muted py-3">Loading...</p>}
+        {error && <p className="text-[13px] text-error py-3">{error}</p>}
 
         {!loading && !error && (
-          <table className="activity-table">
+          <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
             <thead>
-              <tr>
-                <th>Rep</th>
-                <th>Date</th>
-                <th>Description</th>
+              <tr className="bg-surface-alt border-b-2 border-line-header">
+                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">Rep</th>
+                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">Date</th>
+                <th className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">Description</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="activity-empty">No activity found.</td>
+                  <td colSpan={3} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
+                    No activity found.
+                  </td>
                 </tr>
               ) : (
                 filtered.map((a) => (
-                  <tr key={a._id}>
-                    <td>{a.csr_id}</td>
-                    <td>{formatDate(a.timestamp)}</td>
-                    <td>{getDescription(a)}</td>
+                  <tr key={a._id} className="group">
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">{a.csr_id}</td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">{formatDate(a.timestamp)}</td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">{getDescription(a)}</td>
                   </tr>
                 ))
               )}
