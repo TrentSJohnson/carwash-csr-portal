@@ -1,21 +1,24 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-var createError = require('http-errors');
-var express = require('express');
-var mongoose = require('mongoose');
+import createError from 'http-errors';
+import express from 'express';
+import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import cors from 'cors';
+
+import indexRouter from './routes/index.js';
+import usersRouter from './routes/users.js';
 
 mongoose.connect(process.env.MONGO_API_CONNECTION_STRING)
   .then(() => console.log('MongoDB connected'))
   .catch((err) => console.error('MongoDB connection error:', err));
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require('cors');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -51,4 +54,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
+export default app;
