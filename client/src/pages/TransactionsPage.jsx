@@ -9,6 +9,7 @@ const STATUS_FILTERS = [
 ]
 
 const DATE_RANGES = [
+  { id: 'all', label: 'All Time' },
   { id: 'month', label: 'Current Month' },
   { id: '7d', label: 'Last 7 Days' },
   { id: '24h', label: 'Last 24 Hrs' },
@@ -40,7 +41,7 @@ export default function TransactionsPage() {
   const [loading, setLoading]           = useState(true)
   const [error, setError]               = useState(null)
   const [selectedStatuses, setSelectedStatuses] = useState(new Set(['all']))
-  const [dateRange, setDateRange]       = useState('month')
+  const [dateRange, setDateRange]       = useState('all')
   const [search, setSearch]             = useState('')
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function TransactionsPage() {
   const filtered = useMemo(() => {
     const threshold = getDateThreshold(dateRange)
     return transactions.filter((t) => {
-      if (threshold && new Date(t.date) < threshold) return false
+      if (threshold && new Date(t.timestamp ?? t.createdAt) < threshold) return false
       if (!selectedStatuses.has('all') && !selectedStatuses.has(t.status)) return false
       if (search) {
         const q      = search.toLowerCase()
@@ -176,7 +177,7 @@ export default function TransactionsPage() {
                       </span>
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {formatDate(t.date)}
+                      {formatDate(t.timestamp ?? t.createdAt)}
                     </td>
                   </tr>
                 ))
