@@ -1,0 +1,47 @@
+.server-gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 46, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.server-gate-dialog {
+  background: #fff;
+  border-radius: 10px;
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  min-width: 260px;
+}
+
+.server-gate-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0daea;
+  border-top-color: #7c5cbf;
+  border-radius: 50%;
+  animation: sg-spin 0.8s linear infinite;
+}
+
+@keyframes sg-spin {
+  to { transform: rotate(360deg); }
+}
+
+.server-gate-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.server-gate-sub {
+  margin: 0;
+  font-size: 13px;
+  color: #888;
+}
