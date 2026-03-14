@@ -1,5 +1,4 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import './Layout.css'
 
 const navItems = [
   { to: '/home', label: 'Home', icon: '⌂' },
@@ -12,27 +11,31 @@ const navItems = [
 
 export default function Layout() {
   return (
-    <div className="layout">
-      <header className="layout-header">
-        <span className="layout-header-logo">≡ CSR Portal</span>
-        <span className="layout-header-user">Trent J. 👤</span>
+    <div className="flex flex-col h-full">
+      <header className="flex items-center justify-between px-5 h-12 bg-[#1a1a2e] text-white shrink-0">
+        <span className="font-semibold text-[15px] tracking-[0.5px]">≡ CSR Portal</span>
+        <span className="text-[13px] text-[#c8c8d8]">Trent J. 👤</span>
       </header>
-      <div className="layout-body">
-        <nav className="layout-sidebar">
+      <div className="flex flex-1 overflow-hidden">
+        <nav className="w-20 bg-[#1a1a2e] flex flex-col pt-3 shrink-0">
           {navItems.map(({ to, label, icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
-                'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
+                `flex flex-col items-center py-2.5 no-underline text-[11px] gap-0.5 transition-colors duration-150 ${
+                  isActive
+                    ? 'text-white border-l-[3px] border-[#7c5cbf]'
+                    : 'text-[#9999b8] hover:text-white hover:bg-white/5'
+                }`
               }
             >
-              <span className="sidebar-icon">{icon}</span>
-              <span className="sidebar-label">{label}</span>
+              <span className="text-base">{icon}</span>
+              <span className="text-[10px]">{label}</span>
             </NavLink>
           ))}
         </nav>
-        <main className="layout-main">
+        <main className="flex-1 overflow-auto bg-[#f4f5f7]">
           <Outlet />
         </main>
       </div>
