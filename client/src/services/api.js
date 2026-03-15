@@ -12,3 +12,8 @@ export async function getActivities() {
   const { data } = await api.get('/api/activities')
   return data
 }
+
+export async function getTransactions() {
+  const { data } = await api.get('/api/transactions')
+  return data
+}

@@ -72,26 +72,35 @@ async function seed() {
 
   // --- Transactions ---
   await Transaction.insertMany([
+    // Older history
     { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(60) },
-    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(30) },
-    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Paid',   timestamp: daysAgo(30) },
-    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Failed', timestamp: daysAgo(2) },
     { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(90) },
     { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(60) },
-    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(30) },
     { member_id: jordan._id, subscription_id: subJordanBasic._id,      amount: 9.99,  status: 'Paid',   timestamp: daysAgo(45) },
+    // Last month (within 30 days)
+    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(28) },
+    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Paid',   timestamp: daysAgo(28) },
+    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(25) },
     { member_id: jordan._id, subscription_id: subJordanBasic._id,      amount: 9.99,  status: 'Failed', timestamp: daysAgo(15) },
+    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(10) },
+    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(8) },
+    // Last week (within 7 days)
+    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Paid',   timestamp: daysAgo(6) },
+    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(5) },
+    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(3) },
+    { member_id: jordan._id, subscription_id: subJordanBasic._id,      amount: 9.99,  status: 'Failed', timestamp: daysAgo(2) },
+    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Failed', timestamp: daysAgo(1) },
   ]);
   console.log('Seeded transactions');
 
   // --- Activities (2 CSR reps: csr_001 = Sarah Kim, csr_002 = Derek Patel) ---
   await Activity.insertMany([
-    { member_id: alice._id,  csr_id: 'csr_001', action_taken: 'Edit Info',   notes: 'Updated phone number per member request.',         timestamp: daysAgo(55) },
-    { member_id: marcus._id, csr_id: 'csr_002', action_taken: 'Transfer',    notes: 'Transferred subscription to new vehicle.',         timestamp: daysAgo(40) },
-    { member_id: jordan._id, csr_id: 'csr_001', action_taken: 'Edit Info',   notes: 'Corrected email address.',                         timestamp: daysAgo(30) },
-    { member_id: jordan._id, csr_id: 'csr_002', action_taken: 'Cancel Sub',  notes: 'Member requested pause due to travel.',            timestamp: daysAgo(14) },
-    { member_id: alice._id,  csr_id: 'csr_002', action_taken: 'Edit Info',   notes: 'Added second vehicle to account.',                 timestamp: daysAgo(7) },
-    { member_id: marcus._id, csr_id: 'csr_001', action_taken: 'Transfer',    notes: 'Member traded in old truck, updated vehicle info.', timestamp: daysAgo(3) },
+    { member_id: alice._id,  csr_id: 'csr_001', action_taken: 'Edit Info',   notes: 'Updated phone number per member request.',         timestamp: daysAgo(30) },
+    { member_id: marcus._id, csr_id: 'csr_002', action_taken: 'Transfer',    notes: 'Transferred subscription to new vehicle.',         timestamp: daysAgo(8) },
+    { member_id: jordan._id, csr_id: 'csr_001', action_taken: 'Edit Info',   notes: 'Corrected email address.',                         timestamp: daysAgo(6) },
+    { member_id: jordan._id, csr_id: 'csr_002', action_taken: 'Cancel Sub',  notes: 'Member requested pause due to travel.',            timestamp: daysAgo(1) },
+    { member_id: alice._id,  csr_id: 'csr_002', action_taken: 'Edit Info',   notes: 'Added second vehicle to account.',                 timestamp: daysAgo(.5) },
+    { member_id: marcus._id, csr_id: 'csr_001', action_taken: 'Transfer',    notes: 'Member traded in old truck, updated vehicle info.', timestamp: daysAgo(0) },
   ]);
   console.log('Seeded activities');
 

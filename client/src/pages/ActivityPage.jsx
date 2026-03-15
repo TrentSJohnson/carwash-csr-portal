@@ -47,7 +47,7 @@ export default function ActivityPage() {
 
   useEffect(() => {
     getActivities()
-      .then(setActivities)
+      .then((data) => setActivities(Array.isArray(data) ? data : []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
