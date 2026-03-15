@@ -22,7 +22,7 @@ export const createMember = async (req, res) => {
 
 export const updateMember = async (req, res) => {
   const member = await Member.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!member) return res.status(404).json({ message: 'Member not found' });
