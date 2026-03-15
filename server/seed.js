@@ -72,15 +72,24 @@ async function seed() {
 
   // --- Transactions ---
   await Transaction.insertMany([
+    // Older history
     { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(60) },
-    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(30) },
-    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Paid',   timestamp: daysAgo(30) },
-    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Failed', timestamp: daysAgo(2) },
     { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(90) },
     { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(60) },
-    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(30) },
     { member_id: jordan._id, subscription_id: subJordanBasic._id,      amount: 9.99,  status: 'Paid',   timestamp: daysAgo(45) },
+    // Last month (within 30 days)
+    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(28) },
+    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Paid',   timestamp: daysAgo(28) },
+    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(25) },
     { member_id: jordan._id, subscription_id: subJordanBasic._id,      amount: 9.99,  status: 'Failed', timestamp: daysAgo(15) },
+    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(10) },
+    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(8) },
+    // Last week (within 7 days)
+    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Paid',   timestamp: daysAgo(6) },
+    { member_id: marcus._id, subscription_id: subMarcusUnlimited._id,  amount: 49.99, status: 'Paid',   timestamp: daysAgo(5) },
+    { member_id: alice._id,  subscription_id: subAliceGold._id,        amount: 29.99, status: 'Paid',   timestamp: daysAgo(3) },
+    { member_id: jordan._id, subscription_id: subJordanBasic._id,      amount: 9.99,  status: 'Failed', timestamp: daysAgo(2) },
+    { member_id: alice._id,  subscription_id: subAliceSilver._id,      amount: 19.99, status: 'Failed', timestamp: daysAgo(1) },
   ]);
   console.log('Seeded transactions');
 
