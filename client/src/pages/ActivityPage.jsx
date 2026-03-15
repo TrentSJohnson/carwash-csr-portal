@@ -1,11 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getActivities } from '../services/api'
-
-const TIME_FILTERS = [
-  { id: '24h', label: 'Last 24 Hrs' },
-  { id: '7d', label: 'Last 7 Days' },
-  { id: 'month', label: 'Current Month' },
-]
+import DateRangeSelect from '../components/DateRangeSelect'
 
 function formatDate(ts) {
   const d = new Date(ts)
@@ -18,17 +13,11 @@ function formatDate(ts) {
   return `${month}/${day} ${h}:${minutes} ${ampm}`
 }
 
-function getTimeThreshold(filterId) {
+function getTimeThreshold(rangeId) {
   const now = new Date()
-  if (filterId === '24h') {
-    return new Date(now - 24 * 60 * 60 * 1000)
-  }
-  if (filterId === '7d') {
-    return new Date(now - 7 * 24 * 60 * 60 * 1000)
-  }
-  if (filterId === 'month') {
-    return new Date(now.getFullYear(), now.getMonth(), 1)
-  }
+  if (rangeId === '24h') return new Date(now - 24 * 60 * 60 * 1000)
+  if (rangeId === '7d') return new Date(now - 7 * 24 * 60 * 60 * 1000)
+  if (rangeId === 'month') return new Date(now.getFullYear(), now.getMonth(), 1)
   return null
 }
 
@@ -42,7 +31,7 @@ export default function ActivityPage() {
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [timeFilter, setTimeFilter] = useState('7d')
+  const [timeFilter, setTimeFilter] = useState('all')
   const [search, setSearch] = useState('')
 
   useEffect(() => {
@@ -71,20 +60,7 @@ export default function ActivityPage() {
     <div className="flex h-full">
       <aside className="w-40 py-5 px-4 bg-surface border-r border-line-strong shrink-0">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mb-2.5">
-            Filters (By Time)
-          </p>
-          {TIME_FILTERS.map(({ id, label }) => (
-            <label key={id} className="flex items-center gap-2 text-[13px] text-body mb-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={timeFilter === id}
-                onChange={() => setTimeFilter(id)}
-                className="cursor-pointer accent-accent"
-              />
-              {label}
-            </label>
-          ))}
+          <DateRangeSelect value={timeFilter} onChange={setTimeFilter} />
         </div>
       </aside>
 

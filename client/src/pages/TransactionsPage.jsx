@@ -1,18 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getTransactions } from '../services/api'
+import DateRangeSelect from '../components/DateRangeSelect'
 
 const STATUS_FILTERS = [
   { id: 'all', label: 'All Statuses' },
   { id: 'Pending', label: 'Pending' },
   { id: 'Failed', label: 'Failed' },
   { id: 'Success', label: 'Success' },
-]
-
-const DATE_RANGES = [
-  { id: 'all', label: 'All Time' },
-  { id: 'month', label: 'Current Month' },
-  { id: '7d', label: 'Last 7 Days' },
-  { id: '24h', label: 'Last 24 Hrs' },
 ]
 
 const STATUS_STYLES = {
@@ -103,18 +97,7 @@ export default function TransactionsPage() {
         </div>
 
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mb-2.5">
-            Date Range:
-          </p>
-          <select
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="w-full text-[12px] border border-line-input rounded px-2 py-1 text-body bg-surface outline-none focus:border-accent"
-          >
-            {DATE_RANGES.map(({ id, label }) => (
-              <option key={id} value={id}>{label}</option>
-            ))}
-          </select>
+          <DateRangeSelect value={dateRange} onChange={setDateRange} />
         </div>
       </aside>
 
