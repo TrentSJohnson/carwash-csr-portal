@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { getTransactions } from '../services/api'
 import DateRangeSelect from '../components/DateRangeSelect'
+import SearchBar from '../components/SearchBar'
 
 const STATUS_FILTERS = [
   { id: 'all', label: 'All Statuses' },
@@ -102,16 +103,7 @@ export default function TransactionsPage() {
       </aside>
 
       <section className="flex-1 p-5 px-6 overflow-auto">
-        <div className="relative mb-5">
-          <input
-            type="text"
-            placeholder="Search transactions by ID, Member, or License Plate"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full py-2 pl-3 pr-9 border border-line-input rounded-md text-[13px] bg-surface text-brand outline-none focus:border-accent focus:shadow-[0_0_0_2px_rgba(124,92,191,0.15)]"
-          />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none">🔍</span>
-        </div>
+        <SearchBar value={search} onChange={setSearch} placeholder="Search transactions by ID, Member, or License Plate" />
 
         <h2 className="text-[15px] font-semibold text-brand mb-3">Transactions</h2>
 
