@@ -6,6 +6,8 @@ import {
   getMemberSubscriptions,
   getMemberTransactions,
   getMemberActivities,
+  updateVehicle,
+  deleteVehicle,
 } from '../services/api'
 
 const STATUS_STYLES = {
@@ -64,6 +66,78 @@ function SectionTable({ title, cols, rows, empty }) {
 
 const tdClass = 'px-3.5 py-2 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover'
 
+function EditVehicleModal({ vehicle, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    make_model:    vehicle.make_model    ?? '',
+    license_plate: vehicle.license_plate ?? '',
+    state:         vehicle.state         ?? '',
+    rfid_tag_id:   vehicle.rfid_tag_id   ?? '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [err, setErr]       = useState(null)
+
+  function handleChange(e) {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setSaving(true)
+    setErr(null)
+    try {
+      const updated = await updateVehicle(vehicle._id, form)
+      onSaved(updated)
+    } catch (e) {
+      setErr(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-surface rounded-xl shadow-xl w-full max-w-sm p-6">
+        <h2 className="text-[14px] font-semibold text-body mb-4">Edit Vehicle</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {[
+            { label: 'Make / Model', name: 'make_model' },
+            { label: 'License Plate', name: 'license_plate' },
+            { label: 'State', name: 'state' },
+            { label: 'RFID Tag ID', name: 'rfid_tag_id' },
+          ].map(({ label, name }) => (
+            <div key={name}>
+              <label className="block text-[11px] text-muted mb-0.5">{label}</label>
+              <input
+                name={name}
+                value={form[name]}
+                onChange={handleChange}
+                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            </div>
+          ))}
+          {err && <p className="text-[12px] text-error">{err}</p>}
+          <div className="flex justify-end gap-2 mt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-[12px] rounded-md border border-line text-muted hover:bg-surface-alt"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function UserDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -75,6 +149,12 @@ export default function UserDetailPage() {
   const [activities, setActivities]       = useState([])
   const [loading, setLoading]             = useState(true)
   const [error, setError]                 = useState(null)
+
+  const [editingVehicle, setEditingVehicle] = useState(null)
+
+  function refreshActivities() {
+    getMemberActivities(id).then(setActivities).catch(() => {})
+  }
 
   useEffect(() => {
     Promise.all([
@@ -94,6 +174,19 @@ export default function UserDetailPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  async function handleDeleteVehicle(vehicle) {
+    if (!window.confirm(`Delete ${vehicle.make_model ?? vehicle.license_plate}?`)) return
+    await deleteVehicle(vehicle._id)
+    setVehicles((prev) => prev.filter((v) => v._id !== vehicle._id))
+    refreshActivities()
+  }
+
+  function handleVehicleSaved(updated) {
+    setVehicles((prev) => prev.map((v) => (v._id === updated._id ? updated : v)))
+    setEditingVehicle(null)
+    refreshActivities()
+  }
 
   // Build a vehicle_id → subscription map for the vehicles table
   const subByVehicle = Object.fromEntries(
@@ -143,11 +236,19 @@ export default function UserDetailPage() {
         </div>
       </aside>
 
+      {editingVehicle && (
+        <EditVehicleModal
+          vehicle={editingVehicle}
+          onClose={() => setEditingVehicle(null)}
+          onSaved={handleVehicleSaved}
+        />
+      )}
+
       {/* Right panel — tables */}
       <section className="flex-1 p-6 overflow-auto">
         <SectionTable
           title="Vehicles"
-          cols={['Vehicle', 'License #', 'State', 'Plan', 'Sub Status']}
+          cols={['Vehicle', 'License #', 'State', 'Plan', 'Sub Status', '']}
           empty="No vehicles on file."
           rows={vehicles.map((v) => {
             const sub = subByVehicle[v._id]
@@ -157,8 +258,30 @@ export default function UserDetailPage() {
                 <td className={tdClass}>{v.license_plate}</td>
                 <td className={tdClass}>{v.state ?? '—'}</td>
                 <td className={tdClass}>{sub?.plan_id?.plan_name ?? '—'}</td>
-                <td className={`${tdClass}`}>
+                <td className={tdClass}>
                   {sub ? <StatusBadge value={sub.status} /> : '—'}
+                </td>
+                <td className={`${tdClass} w-16`}>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => setEditingVehicle(v)}
+                      title="Edit vehicle"
+                      className="text-accent hover:text-accent/70"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-9 9A2 2 0 016 16H4a1 1 0 01-1-1v-2a2 2 0 01.586-1.414l9-9z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteVehicle(v)}
+                      title="Delete vehicle"
+                      className="text-error hover:text-error/70"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             )
