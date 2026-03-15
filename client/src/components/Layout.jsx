@@ -4,8 +4,7 @@ const navItems = [
   { to: '/home', label: 'Home', icon: '⌂' },
   { to: '/users', label: 'Users', icon: '👤' },
   { to: '/activity', label: 'Activity', icon: '📈' },
-  { to: '/plans', label: 'Plans', icon: '📋' },
-  { to: '/transactions', label: 'Trans.', icon: '💳' },
+{ to: '/transactions', label: 'Trans.', icon: '💳' },
   { to: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
