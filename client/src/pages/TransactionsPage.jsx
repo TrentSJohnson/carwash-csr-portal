@@ -46,7 +46,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     getTransactions()
-      .then(setTransactions)
+      .then((data) => setTransactions(Array.isArray(data) ? data : []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
