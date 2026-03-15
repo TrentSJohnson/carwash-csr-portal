@@ -1,0 +1,31 @@
+_________________________________________________________________________________________
+| [≡] | CSR Portal                                                  [ Trent J. ] [👤]   |
+|_____|_________________________________________________________________________________|
+|                    |                                                                  |
+| Filters (By Role)  |     [____________________________________________________[Q] ]  |
+| [X] All Roles      |      Search users by name, email, or plan                       |
+| [ ] Member         |                                                                  |
+| [ ] CSR            |     Users                                                        |
+| [ ] Admin          |      __________________________________________________________  |
+|                    |    | Name       | Email              | Role   | Plan  | Since  | |
+| Filters (By Status)|    |------------|--------------------| -------|-------|--------| |
+| [X] Active         |    | Jane Smith | jane@email.com     | Member | Gold  | 02/10  | |
+| [ ] Inactive       |    | Bob Torres | bob@email.com      | CSR    |  —    | 01/05  | |
+| [ ] Suspended      |    | Alice Park | alice@email.com    | Member | Basic | 03/01  | |
+|                    |    | Mike Chen  | mike@email.com     | Admin  |  —    | 11/20  | |
+| Plan:              |    | Sara Gomez | sara@email.com     | Member | Gold  | 02/28  | |
+| [X] All Plans      |    |____________|____________________|________|_______|________| |
+| [ ] Basic          |                                                                  |
+| [ ] Gold           |                                                                  |
+| [ ] Platinum       |                                                                  |
+|                    |                                                                  |
+|  📋 Plans          |                                                                  |
+|                    |                                                                  |
+|  💳 Trans          |                                                                  |
+|                    |                                                                  |
+|  📈 Act.           |                                                                  |
+|                    |                                                                  |
+|  👥 Users          |                                                                  |
+|                    |                                                                  |
+|  ⚙️ Sett.          |                                                                  |
+|____________________|__________________________________________________________________|
