@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getMembers } from '../services/api'
 
 const STATUS_FILTERS = [
@@ -27,7 +27,8 @@ export default function UsersPage() {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
   const [selectedStatuses, setSelectedStatuses] = useState(new Set(['all']))
-  const [search, setSearch]     = useState('')
+  const [searchParams] = useSearchParams()
+  const [search, setSearch]     = useState(searchParams.get('q') ?? '')
   const navigate = useNavigate()
 
   useEffect(() => {

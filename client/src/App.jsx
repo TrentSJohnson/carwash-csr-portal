@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
+import HomePage from './pages/HomePage'
 import ActivityPage from './pages/ActivityPage'
 import TransactionsPage from './pages/TransactionsPage'
 import UsersPage from './pages/UsersPage'
@@ -12,7 +13,8 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/activity" replace />} />
+            <Route index element={<Navigate to="/home" replace />} />
+            <Route path="home" element={<HomePage />} />
             <Route path="activity" element={<ActivityPage />} />
             <Route path="transactions" element={<TransactionsPage />} />
             <Route path="users" element={<UsersPage />} />
