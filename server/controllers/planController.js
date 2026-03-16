@@ -18,7 +18,7 @@ export const createPlan = async (req, res) => {
 
 export const updatePlan = async (req, res) => {
   const plan = await Plan.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!plan) return res.status(404).json({ message: 'Plan not found' });

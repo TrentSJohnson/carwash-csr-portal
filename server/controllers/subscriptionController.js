@@ -24,7 +24,7 @@ export const createSubscription = async (req, res) => {
 
 export const updateSubscription = async (req, res) => {
   const subscription = await Subscription.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!subscription) return res.status(404).json({ message: 'Subscription not found' });
