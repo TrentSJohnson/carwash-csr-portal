@@ -20,7 +20,8 @@ function formatDate(ts) {
   const d = new Date(ts)
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const day   = String(d.getDate()).padStart(2, '0')
-  return `${month}/${day}`
+  const year  = d.getFullYear()
+  return `${month}/${day}/${year}`
 }
 
 function getDateThreshold(rangeId) {
@@ -114,8 +115,8 @@ export default function TransactionsPage() {
           <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
             <thead>
               <tr className="bg-surface-alt border-b-2 border-line-header">
-                {['ID', 'Member', 'Vehicle', 'Plan', 'Amount', 'Status', 'Date'].map((col) => (
-                  <th key={col} className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">
+                {['ID', 'Member', 'Email', 'Vehicle', 'Make/Model', 'State', 'Plan', 'Sub Status', 'Sub Start', 'Amount', 'Status', 'Timestamp', 'Created At'].map((col) => (
+                  <th key={col} className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted whitespace-nowrap">
                     {col}
                   </th>
                 ))}
@@ -124,35 +125,55 @@ export default function TransactionsPage() {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
+                  <td colSpan={13} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
                     No transactions found.
                   </td>
                 </tr>
               ) : (
                 filtered.map((t) => (
                   <tr key={t._id ?? t.id} className="group">
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover font-mono text-[11px]">
                       {t._id ?? t.id}
                     </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
                       {t.member_id?.first_name} {t.member_id?.last_name}
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
+                      {t.member_id?.email}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
                       {t.subscription_id?.vehicle_id?.license_plate}
                     </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {t.subscription_id?.plan_id?.plan_name}
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
+                      {t.subscription_id?.vehicle_id?.make_model}
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {t.amount}
+                      {t.subscription_id?.vehicle_id?.state}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
+                      {t.subscription_id?.plan_id?.plan_name}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px] border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[t.subscription_id?.status] ?? 'bg-line text-muted'}`}>
+                        {t.subscription_id?.status}
+                      </span>
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
+                      {t.subscription_id?.start_date ? formatDate(t.subscription_id.start_date) : '—'}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
+                      ${t.amount}
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
                       <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[t.status] ?? 'bg-line text-muted'}`}>
                         {t.status}
                       </span>
                     </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {formatDate(t.timestamp ?? t.createdAt)}
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
+                      {t.timestamp ? formatDate(t.timestamp) : '—'}
+                    </td>
+                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
+                      {t.createdAt ? formatDate(t.createdAt) : '—'}
                     </td>
                   </tr>
                 ))
