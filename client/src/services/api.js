@@ -48,8 +48,18 @@ export async function getMemberActivities(id) {
   return data
 }
 
+export async function createMember(body) {
+  const { data } = await api.post('/api/members', body)
+  return data
+}
+
 export async function updateMember(id, body) {
   const { data } = await api.put(`/api/members/${id}`, body)
+  return data
+}
+
+export async function createVehicle(body) {
+  const { data } = await api.post('/api/vehicles', body)
   return data
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { getMembers } from '../services/api'
+import { getMembers, createMember } from '../services/api'
 
 const STATUS_FILTERS = [
   { id: 'all', label: 'All Statuses' },
@@ -22,6 +22,88 @@ function formatDate(ts) {
   return `${month}/${day}`
 }
 
+function AddUserModal({ onClose, onCreated }) {
+  const [form, setForm] = useState({
+    first_name: '', last_name: '', email: '', phone: '', account_status: 'Active',
+  })
+  const [saving, setSaving] = useState(false)
+  const [err, setErr]       = useState(null)
+
+  function handleChange(e) {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setSaving(true)
+    setErr(null)
+    try {
+      const created = await createMember(form)
+      onCreated(created)
+    } catch (e) {
+      setErr(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-surface rounded-xl shadow-xl w-full max-w-sm p-6">
+        <h2 className="text-[14px] font-semibold text-body mb-4">Add User</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {[
+            { label: 'First Name', name: 'first_name' },
+            { label: 'Last Name',  name: 'last_name'  },
+            { label: 'Email',      name: 'email'      },
+            { label: 'Phone',      name: 'phone'      },
+          ].map(({ label, name }) => (
+            <div key={name}>
+              <label className="block text-[11px] text-muted mb-0.5">{label}</label>
+              <input
+                name={name}
+                value={form[name]}
+                onChange={handleChange}
+                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            </div>
+          ))}
+          <div>
+            <label className="block text-[11px] text-muted mb-0.5">Status</label>
+            <select
+              name="account_status"
+              value={form.account_status}
+              onChange={handleChange}
+              className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              {['Active', 'Inactive', 'Suspended'].map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          {err && <p className="text-[12px] text-error">{err}</p>}
+          <div className="flex justify-end gap-2 mt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-[12px] rounded-md border border-line text-muted hover:bg-surface-alt"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
+            >
+              {saving ? 'Saving…' : 'Add User'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function UsersPage() {
   const [members, setMembers]   = useState([])
   const [loading, setLoading]   = useState(true)
@@ -29,6 +111,7 @@ export default function UsersPage() {
   const [selectedStatuses, setSelectedStatuses] = useState(new Set(['all']))
   const [searchParams] = useSearchParams()
   const [search, setSearch]     = useState(searchParams.get('q') ?? '')
+  const [showAdd, setShowAdd]   = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -67,8 +150,15 @@ export default function UsersPage() {
     })
   }, [members, selectedStatuses, search])
 
+  function handleCreated(member) {
+    setMembers((prev) => [...prev, member])
+    setShowAdd(false)
+    navigate(`/users/${member._id}`)
+  }
+
   return (
     <div className="flex h-full">
+      {showAdd && <AddUserModal onClose={() => setShowAdd(false)} onCreated={handleCreated} />}
       <aside className="w-40 py-5 px-4 bg-surface border-r border-line-strong shrink-0">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mb-2.5">
@@ -100,7 +190,15 @@ export default function UsersPage() {
           <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none">🔍</span>
         </div>
 
-        <h2 className="text-[15px] font-semibold text-brand mb-3">Users</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-[15px] font-semibold text-brand">Users</h2>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90"
+          >
+            + Add User
+          </button>
+        </div>
 
         {loading && <p className="text-[13px] text-muted py-3">Loading...</p>}
         {error   && <p className="text-[13px] text-error py-3">{error}</p>}

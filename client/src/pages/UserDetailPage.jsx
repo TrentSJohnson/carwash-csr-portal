@@ -7,6 +7,7 @@ import {
   getMemberTransactions,
   getMemberActivities,
   updateMember,
+  createVehicle,
   updateVehicle,
   deleteVehicle,
   getPlans,
@@ -39,10 +40,13 @@ function formatDate(ts) {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 
-function SectionTable({ title, cols, rows, empty }) {
+function SectionTable({ title, cols, rows, empty, headerAction }) {
   return (
     <div className="mb-7">
-      <h3 className="text-[13px] font-semibold text-brand mb-2">{title}</h3>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-[13px] font-semibold text-brand">{title}</h3>
+        {headerAction}
+      </div>
       <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
         <thead>
           <tr className="bg-surface-alt border-b-2 border-line-header">
@@ -147,6 +151,79 @@ function EditMemberModal({ member, onClose, onSaved }) {
               className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
             >
               {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function AddVehicleModal({ memberId, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    make_model:    '',
+    license_plate: '',
+    state:         '',
+    rfid_tag_id:   '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [err, setErr]       = useState(null)
+
+  function handleChange(e) {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setSaving(true)
+    setErr(null)
+    try {
+      const vehicle = await createVehicle({ ...form, member_id: memberId })
+      onSaved(vehicle)
+    } catch (e) {
+      setErr(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-surface rounded-xl shadow-xl w-full max-w-sm p-6">
+        <h2 className="text-[14px] font-semibold text-body mb-4">Add Vehicle</h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {[
+            { label: 'Make / Model',  name: 'make_model'    },
+            { label: 'License Plate', name: 'license_plate', required: true },
+            { label: 'State',         name: 'state'          },
+            { label: 'RFID Tag ID',   name: 'rfid_tag_id'    },
+          ].map(({ label, name, required }) => (
+            <div key={name}>
+              <label className="block text-[11px] text-muted mb-0.5">{label}{required && ' *'}</label>
+              <input
+                name={name}
+                value={form[name]}
+                onChange={handleChange}
+                required={required}
+                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
+              />
+            </div>
+          ))}
+          {err && <p className="text-[12px] text-error">{err}</p>}
+          <div className="flex justify-end gap-2 mt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-[12px] rounded-md border border-line text-muted hover:bg-surface-alt"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
+            >
+              {saving ? 'Saving…' : 'Add Vehicle'}
             </button>
           </div>
         </form>
@@ -285,6 +362,7 @@ export default function UserDetailPage() {
   const [error, setError]                 = useState(null)
 
   const [editingVehicle, setEditingVehicle] = useState(null)
+  const [addingVehicle, setAddingVehicle]   = useState(false)
   const [editingMember, setEditingMember]   = useState(false)
 
   function refreshActivities() {
@@ -322,6 +400,12 @@ export default function UserDetailPage() {
   function handleMemberSaved(updated) {
     setMember(updated)
     setEditingMember(false)
+    refreshActivities()
+  }
+
+  function handleVehicleAdded(newVehicle) {
+    setVehicles((prev) => [...prev, newVehicle])
+    setAddingVehicle(false)
     refreshActivities()
   }
 
@@ -402,6 +486,14 @@ export default function UserDetailPage() {
         />
       )}
 
+      {addingVehicle && (
+        <AddVehicleModal
+          memberId={id}
+          onClose={() => setAddingVehicle(false)}
+          onSaved={handleVehicleAdded}
+        />
+      )}
+
       {editingVehicle && (
         <EditVehicleModal
           vehicle={editingVehicle}
@@ -416,8 +508,16 @@ export default function UserDetailPage() {
       <section className="flex-1 p-6 overflow-auto">
         <SectionTable
           title="Vehicles"
-          cols={['Vehicle', 'License #', 'State', 'Plan', 'Sub Status', '']}
+          cols={['Vehicle', 'License #', 'State', 'RFID', 'Plan', 'Sub Status', '']}
           empty="No vehicles on file."
+          headerAction={
+            <button
+              onClick={() => setAddingVehicle(true)}
+              className="text-[12px] text-accent hover:underline"
+            >
+              + Add Vehicle
+            </button>
+          }
           rows={vehicles.map((v) => {
             const sub = subByVehicle[v._id]
             return (
@@ -425,6 +525,7 @@ export default function UserDetailPage() {
                 <td className={tdClass}>{v.make_model ?? '—'}</td>
                 <td className={tdClass}>{v.license_plate}</td>
                 <td className={tdClass}>{v.state ?? '—'}</td>
+                <td className={tdClass}>{v.rfid_tag_id ?? '—'}</td>
                 <td className={tdClass}>{sub?.plan_id?.plan_name ?? '—'}</td>
                 <td className={tdClass}>
                   {sub ? <StatusBadge value={sub.status} /> : '—'}
