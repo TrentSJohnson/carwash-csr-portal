@@ -5,7 +5,7 @@ import SearchBar from '../components/SearchBar'
 import StatusBadge from '../components/StatusBadge'
 import DataTable, { tdClass } from '../components/DataTable'
 import useStatusFilter from '../hooks/useStatusFilter'
-import { formatDate } from '../utils/format'
+import { formatDate, getDateThreshold } from '../utils/format'
 
 const STATUS_FILTERS = [
   { id: 'all',     label: 'All Statuses' },
@@ -13,14 +13,6 @@ const STATUS_FILTERS = [
   { id: 'Failed',  label: 'Failed'       },
   { id: 'Success', label: 'Success'      },
 ]
-
-function getDateThreshold(rangeId) {
-  const now = new Date()
-  if (rangeId === '24h')   return new Date(now - 24 * 60 * 60 * 1000)
-  if (rangeId === '7d')    return new Date(now - 7 * 24 * 60 * 60 * 1000)
-  if (rangeId === 'month') return new Date(now.getFullYear(), now.getMonth(), 1)
-  return null
-}
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([])

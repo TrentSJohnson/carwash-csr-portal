@@ -3,15 +3,7 @@ import { getActivities } from '../services/api'
 import DateRangeSelect from '../components/DateRangeSelect'
 import SearchBar from '../components/SearchBar'
 import DataTable, { tdClass } from '../components/DataTable'
-import { formatDate } from '../utils/format'
-
-function getTimeThreshold(rangeId) {
-  const now = new Date()
-  if (rangeId === '24h')   return new Date(now - 24 * 60 * 60 * 1000)
-  if (rangeId === '7d')    return new Date(now - 7 * 24 * 60 * 60 * 1000)
-  if (rangeId === 'month') return new Date(now.getFullYear(), now.getMonth(), 1)
-  return null
-}
+import { formatDate, getDateThreshold } from '../utils/format'
 
 function getDescription(activity) {
   return activity.notes
@@ -34,7 +26,7 @@ export default function ActivityPage() {
   }, [])
 
   const filtered = useMemo(() => {
-    const threshold = getTimeThreshold(timeFilter)
+    const threshold = getDateThreshold(timeFilter)
     return activities.filter((a) => {
       if (threshold && new Date(a.timestamp) < threshold) return false
       if (search) {

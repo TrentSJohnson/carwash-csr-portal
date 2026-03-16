@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import useFormModal from '../hooks/useFormModal'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   getMember,
@@ -20,33 +21,16 @@ import DataTable, { tdClass } from '../components/DataTable'
 import { formatDate } from '../utils/format'
 
 function EditMemberModal({ member, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    first_name:     member.first_name     ?? '',
-    last_name:      member.last_name      ?? '',
-    email:          member.email          ?? '',
-    phone:          member.phone          ?? '',
-    account_status: member.account_status ?? 'Active',
-  })
-  const [saving, setSaving] = useState(false)
-  const [err, setErr]       = useState(null)
-
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setErr(null)
-    try {
-      const updated = await updateMember(member._id, form)
-      onSaved(updated)
-    } catch (e) {
-      setErr(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+  const { form, saving, err, handleChange, handleSubmit } = useFormModal(
+    {
+      first_name:     member.first_name     ?? '',
+      last_name:      member.last_name      ?? '',
+      email:          member.email          ?? '',
+      phone:          member.phone          ?? '',
+      account_status: member.account_status ?? 'Active',
+    },
+    async (form) => { onSaved(await updateMember(member._id, form)) },
+  )
 
   return (
     <Modal title="Edit Member Info" onClose={onClose} onSubmit={handleSubmit} saving={saving}>
@@ -76,32 +60,10 @@ function EditMemberModal({ member, onClose, onSaved }) {
 }
 
 function AddVehicleModal({ memberId, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    make_model:    '',
-    license_plate: '',
-    state:         '',
-    rfid_tag_id:   '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [err, setErr]       = useState(null)
-
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setErr(null)
-    try {
-      const vehicle = await createVehicle({ ...form, member_id: memberId })
-      onSaved(vehicle)
-    } catch (e) {
-      setErr(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+  const { form, saving, err, handleChange, handleSubmit } = useFormModal(
+    { make_model: '', license_plate: '', state: '', rfid_tag_id: '' },
+    async (form) => { onSaved(await createVehicle({ ...form, member_id: memberId })) },
+  )
 
   return (
     <Modal title="Add Vehicle" onClose={onClose} onSubmit={handleSubmit} saving={saving} submitLabel="Add Vehicle">
@@ -119,26 +81,16 @@ function AddVehicleModal({ memberId, onClose, onSaved }) {
 }
 
 function EditVehicleModal({ vehicle, subscription, plans, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    make_model:    vehicle.make_model    ?? '',
-    license_plate: vehicle.license_plate ?? '',
-    state:         vehicle.state         ?? '',
-    rfid_tag_id:   vehicle.rfid_tag_id   ?? '',
-    plan_id:       subscription?.plan_id?._id ?? subscription?.plan_id ?? '',
-    sub_status:    subscription?.status ?? '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [err, setErr]       = useState(null)
-
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setErr(null)
-    try {
+  const { form, saving, err, handleChange, handleSubmit } = useFormModal(
+    {
+      make_model:    vehicle.make_model    ?? '',
+      license_plate: vehicle.license_plate ?? '',
+      state:         vehicle.state         ?? '',
+      rfid_tag_id:   vehicle.rfid_tag_id   ?? '',
+      plan_id:       subscription?.plan_id?._id ?? subscription?.plan_id ?? '',
+      sub_status:    subscription?.status ?? '',
+    },
+    async (form) => {
       const { plan_id, sub_status, ...vehicleFields } = form
       const updatedVehicle = await updateVehicle(vehicle._id, vehicleFields)
 
@@ -153,12 +105,8 @@ function EditVehicleModal({ vehicle, subscription, plans, onClose, onSaved }) {
       }
 
       onSaved(updatedVehicle, updatedSub)
-    } catch (e) {
-      setErr(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+    },
+  )
 
   return (
 

@@ -3,9 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getMembers, createMember } from '../services/api'
 import StatusBadge from '../components/StatusBadge'
 import Modal from '../components/Modal'
+import SearchBar from '../components/SearchBar'
 import FormField, { inputClass } from '../components/FormField'
 import DataTable, { tdClass } from '../components/DataTable'
 import useStatusFilter from '../hooks/useStatusFilter'
+import useFormModal from '../hooks/useFormModal'
 import { formatDate } from '../utils/format'
 
 const STATUS_FILTERS = [
@@ -16,29 +18,10 @@ const STATUS_FILTERS = [
 ]
 
 function AddUserModal({ onClose, onCreated }) {
-  const [form, setForm] = useState({
-    first_name: '', last_name: '', email: '', phone: '', account_status: 'Active',
-  })
-  const [saving, setSaving] = useState(false)
-  const [err, setErr]       = useState(null)
-
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setErr(null)
-    try {
-      const created = await createMember(form)
-      onCreated(created)
-    } catch (e) {
-      setErr(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+  const { form, saving, err, handleChange, handleSubmit } = useFormModal(
+    { first_name: '', last_name: '', email: '', phone: '', account_status: 'Active' },
+    async (form) => { onCreated(await createMember(form)) },
+  )
 
   return (
     <Modal title="Add User" onClose={onClose} onSubmit={handleSubmit} saving={saving} submitLabel="Add User">
@@ -126,16 +109,7 @@ export default function UsersPage() {
       </aside>
 
       <section className="flex-1 p-5 px-6 overflow-auto">
-        <div className="relative mb-5">
-          <input
-            type="text"
-            placeholder="Search users by name, email, or phone"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full py-2 pl-3 pr-9 border border-line-input rounded-md text-[13px] bg-surface text-brand outline-none focus:border-accent focus:shadow-[0_0_0_2px_rgba(124,92,191,0.15)]"
-          />
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none">🔍</span>
-        </div>
+        <SearchBar value={search} onChange={setSearch} placeholder="Search users by name, email, or phone" />
 
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[15px] font-semibold text-brand">Users</h2>
