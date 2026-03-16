@@ -1,26 +1,19 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getMembers, createMember } from '../services/api'
+import StatusBadge from '../components/StatusBadge'
+import Modal from '../components/Modal'
+import FormField, { inputClass } from '../components/FormField'
+import DataTable, { tdClass } from '../components/DataTable'
+import useStatusFilter from '../hooks/useStatusFilter'
+import { formatDate } from '../utils/format'
 
 const STATUS_FILTERS = [
-  { id: 'all', label: 'All Statuses' },
-  { id: 'Active', label: 'Active' },
-  { id: 'Inactive', label: 'Inactive' },
-  { id: 'Suspended', label: 'Suspended' },
+  { id: 'all',       label: 'All Statuses' },
+  { id: 'Active',    label: 'Active'       },
+  { id: 'Inactive',  label: 'Inactive'     },
+  { id: 'Suspended', label: 'Suspended'    },
 ]
-
-const STATUS_STYLES = {
-  Active:    'bg-status-success-bg text-status-success-text',
-  Inactive:  'bg-status-pending-bg text-status-pending-text',
-  Suspended: 'bg-status-failed-bg text-status-failed-text',
-}
-
-function formatDate(ts) {
-  const d = new Date(ts)
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day   = String(d.getDate()).padStart(2, '0')
-  return `${month}/${day}`
-}
 
 function AddUserModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -48,59 +41,29 @@ function AddUserModal({ onClose, onCreated }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-surface rounded-xl shadow-xl w-full max-w-sm p-6">
-        <h2 className="text-[14px] font-semibold text-body mb-4">Add User</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {[
-            { label: 'First Name', name: 'first_name' },
-            { label: 'Last Name',  name: 'last_name'  },
-            { label: 'Email',      name: 'email'      },
-            { label: 'Phone',      name: 'phone'      },
-          ].map(({ label, name }) => (
-            <div key={name}>
-              <label className="block text-[11px] text-muted mb-0.5">{label}</label>
-              <input
-                name={name}
-                value={form[name]}
-                onChange={handleChange}
-                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-              />
-            </div>
+    <Modal title="Add User" onClose={onClose} onSubmit={handleSubmit} saving={saving} submitLabel="Add User">
+      {[
+        { label: 'First Name', name: 'first_name' },
+        { label: 'Last Name',  name: 'last_name'  },
+        { label: 'Email',      name: 'email'      },
+        { label: 'Phone',      name: 'phone'      },
+      ].map(({ label, name }) => (
+        <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} />
+      ))}
+      <FormField label="Status" name="account_status">
+        <select
+          name="account_status"
+          value={form.account_status}
+          onChange={handleChange}
+          className={inputClass}
+        >
+          {['Active', 'Inactive', 'Suspended'].map((s) => (
+            <option key={s} value={s}>{s}</option>
           ))}
-          <div>
-            <label className="block text-[11px] text-muted mb-0.5">Status</label>
-            <select
-              name="account_status"
-              value={form.account_status}
-              onChange={handleChange}
-              className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              {['Active', 'Inactive', 'Suspended'].map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-          {err && <p className="text-[12px] text-error">{err}</p>}
-          <div className="flex justify-end gap-2 mt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 text-[12px] rounded-md border border-line text-muted hover:bg-surface-alt"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
-            >
-              {saving ? 'Saving…' : 'Add User'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </select>
+      </FormField>
+      {err && <p className="text-[12px] text-error">{err}</p>}
+    </Modal>
   )
 }
 
@@ -108,7 +71,7 @@ export default function UsersPage() {
   const [members, setMembers]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
-  const [selectedStatuses, setSelectedStatuses] = useState(new Set(['all']))
+  const { selectedStatuses, toggleStatus } = useStatusFilter()
   const [searchParams] = useSearchParams()
   const [search, setSearch]     = useState(searchParams.get('q') ?? '')
   const [showAdd, setShowAdd]   = useState(false)
@@ -120,21 +83,6 @@ export default function UsersPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
-
-  function toggleStatus(id) {
-    setSelectedStatuses((prev) => {
-      const next = new Set(prev)
-      if (id === 'all') return new Set(['all'])
-      next.delete('all')
-      if (next.has(id)) {
-        next.delete(id)
-        if (next.size === 0) return new Set(['all'])
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
 
   const filtered = useMemo(() => {
     return members.filter((m) => {
@@ -159,23 +107,22 @@ export default function UsersPage() {
   return (
     <div className="flex h-full">
       {showAdd && <AddUserModal onClose={() => setShowAdd(false)} onCreated={handleCreated} />}
+
       <aside className="w-40 py-5 px-4 bg-surface border-r border-line-strong shrink-0">
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mb-2.5">
-            Filters (By Status)
-          </p>
-          {STATUS_FILTERS.map(({ id, label }) => (
-            <label key={id} className="flex items-center gap-2 text-[13px] text-body mb-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={id === 'all' ? selectedStatuses.has('all') : selectedStatuses.has(id)}
-                onChange={() => toggleStatus(id)}
-                className="cursor-pointer accent-accent"
-              />
-              {label}
-            </label>
-          ))}
-        </div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mb-2.5">
+          Filters (By Status)
+        </p>
+        {STATUS_FILTERS.map(({ id, label }) => (
+          <label key={id} className="flex items-center gap-2 text-[13px] text-body mb-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={id === 'all' ? selectedStatuses.has('all') : selectedStatuses.has(id)}
+              onChange={() => toggleStatus(id)}
+              className="cursor-pointer accent-accent"
+            />
+            {label}
+          </label>
+        ))}
       </aside>
 
       <section className="flex-1 p-5 px-6 overflow-auto">
@@ -204,48 +151,19 @@ export default function UsersPage() {
         {error   && <p className="text-[13px] text-error py-3">{error}</p>}
 
         {!loading && !error && (
-          <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
-            <thead>
-              <tr className="bg-surface-alt border-b-2 border-line-header">
-                {['Name', 'Email', 'Phone', 'Status', 'Since'].map((col) => (
-                  <th key={col} className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted">
-                    {col}
-                  </th>
-                ))}
+          <DataTable
+            cols={['Name', 'Email', 'Phone', 'Status', 'Since']}
+            empty="No users found."
+            rows={filtered.map((m) => (
+              <tr key={m._id} className="group cursor-pointer" onClick={() => navigate(`/users/${m._id}`)}>
+                <td className={tdClass}>{m.first_name} {m.last_name}</td>
+                <td className={tdClass}>{m.email}</td>
+                <td className={tdClass}>{m.phone ?? '—'}</td>
+                <td className={tdClass}><StatusBadge value={m.account_status} /></td>
+                <td className={tdClass}>{formatDate(m.createdAt)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
-                    No users found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((m) => (
-                  <tr key={m._id} className="group cursor-pointer" onClick={() => navigate(`/users/${m._id}`)}>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {m.first_name} {m.last_name}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {m.email}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {m.phone ?? '—'}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[m.account_status] ?? 'bg-line text-muted'}`}>
-                        {m.account_status}
-                      </span>
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {formatDate(m.createdAt)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+            ))}
+          />
         )}
       </section>
     </div>
