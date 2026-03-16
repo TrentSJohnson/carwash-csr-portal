@@ -1,27 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMembers, getActivities, getTransactions } from '../services/api'
 import DataTable, { tdClass } from '../components/DataTable'
+import useFetch from '../hooks/useFetch'
 import { formatDateTime, getDescription, formatMemberName } from '../utils/format'
 
 export default function HomePage() {
-  const [members, setMembers] = useState([])
-  const [activities, setActivities] = useState([])
-  const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { data: members,      loading: lm, error: em } = useFetch(getMembers)
+  const { data: activities,   loading: la, error: ea } = useFetch(getActivities)
+  const { data: transactions, loading: lt, error: et } = useFetch(getTransactions)
+  const loading = lm || la || lt
+  const error   = em || ea || et
   const navigate = useNavigate()
-
-  useEffect(() => {
-    Promise.all([getMembers(), getActivities(), getTransactions()])
-      .then(([m, a, t]) => {
-        setMembers(Array.isArray(m) ? m : [])
-        setActivities(Array.isArray(a) ? a : [])
-        setTransactions(Array.isArray(t) ? t : [])
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
 
   const overdueCount = useMemo(
     () => transactions.filter((t) => t.status === 'Failed' || t.status === 'Pending').length,
