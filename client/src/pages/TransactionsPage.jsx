@@ -69,8 +69,8 @@ export default function TransactionsPage() {
       if (search) {
         const q      = search.toLowerCase()
         const id     = String(t._id ?? t.id ?? '').toLowerCase()
-        const member = (t.member_name ?? '').toLowerCase()
-        const plate  = (t.license_plate ?? '').toLowerCase()
+        const member = `${t.member_id?.first_name ?? ''} ${t.member_id?.last_name ?? ''}`.toLowerCase()
+        const plate  = (t.subscription_id?.vehicle_id?.license_plate ?? '').toLowerCase()
         if (!id.includes(q) && !member.includes(q) && !plate.includes(q)) return false
       }
       return true
@@ -135,13 +135,13 @@ export default function TransactionsPage() {
                       {t._id ?? t.id}
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {t.member_name}
+                      {t.member_id?.first_name} {t.member_id?.last_name}
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {t.vehicle}
+                      {t.subscription_id?.vehicle_id?.license_plate}
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {t.plan}
+                      {t.subscription_id?.plan_id?.plan_name}
                     </td>
                     <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
                       {t.amount}
