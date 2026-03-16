@@ -10,7 +10,7 @@ export default function useFetch(fetchFn) {
       .then((d) => setData(Array.isArray(d) ? d : []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
-  }, [])
+  }, [fetchFn])
 
   return { data, setData, loading, error }
 }

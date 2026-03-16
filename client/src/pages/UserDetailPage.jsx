@@ -14,9 +14,11 @@ import {
   getPlans,
   updateSubscription,
 } from '../services/api'
-import StatusBadge, { ACCOUNT_STATUSES } from '../components/StatusBadge'
+import StatusBadge from '../components/StatusBadge'
+import { ACCOUNT_STATUSES } from '../utils/statusStyles'
 import Modal from '../components/Modal'
-import FormField, { inputClass } from '../components/FormField'
+import FormField from '../components/FormField'
+import { inputClass } from '../utils/formStyles'
 import DataTable, { tdClass } from '../components/DataTable'
 import { formatDate, formatDateTime } from '../utils/format'
 
