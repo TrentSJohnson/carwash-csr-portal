@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { getTransactions } from '../services/api'
 import DateRangeSelect from '../components/DateRangeSelect'
 import SearchBar from '../components/SearchBar'
 import StatusBadge from '../components/StatusBadge'
 import DataTable, { tdClass } from '../components/DataTable'
 import useStatusFilter from '../hooks/useStatusFilter'
+import useFetch from '../hooks/useFetch'
 import { formatDateTime, getDateThreshold } from '../utils/format'
 
 const STATUS_FILTERS = [
@@ -15,19 +16,10 @@ const STATUS_FILTERS = [
 ]
 
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState([])
-  const [loading, setLoading]           = useState(true)
-  const [error, setError]               = useState(null)
+  const { data: transactions, loading, error } = useFetch(getTransactions)
   const { selectedStatuses, toggleStatus } = useStatusFilter()
   const [dateRange, setDateRange]       = useState('all')
   const [search, setSearch]             = useState('')
-
-  useEffect(() => {
-    getTransactions()
-      .then((data) => setTransactions(Array.isArray(data) ? data : []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
 
   const filtered = useMemo(() => {
     const threshold = getDateThreshold(dateRange)
@@ -56,7 +48,7 @@ export default function TransactionsPage() {
             <label key={id} className="flex items-center gap-2 text-[13px] text-body mb-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={id === 'all' ? selectedStatuses.has('all') : selectedStatuses.has(id)}
+                checked={selectedStatuses.has(id)}
                 onChange={() => toggleStatus(id)}
                 className="cursor-pointer accent-accent"
               />

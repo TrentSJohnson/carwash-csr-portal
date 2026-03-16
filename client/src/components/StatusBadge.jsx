@@ -1,3 +1,5 @@
+export const ACCOUNT_STATUSES = ['Active', 'Inactive', 'Suspended']
+
 export const STATUS_STYLES = {
   Active:    'bg-status-success-bg text-status-success-text',
   Inactive:  'bg-status-pending-bg text-status-pending-text',

@@ -1,29 +1,15 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { getActivities } from '../services/api'
 import DateRangeSelect from '../components/DateRangeSelect'
 import SearchBar from '../components/SearchBar'
 import DataTable, { tdClass } from '../components/DataTable'
-import { formatDateTime, getDateThreshold } from '../utils/format'
-
-function getDescription(activity) {
-  return activity.notes
-    ? `${activity.action_taken}: ${activity.notes}`
-    : activity.action_taken
-}
+import useFetch from '../hooks/useFetch'
+import { formatDateTime, getDateThreshold, getDescription } from '../utils/format'
 
 export default function ActivityPage() {
-  const [activities, setActivities] = useState([])
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState(null)
+  const { data: activities, loading, error } = useFetch(getActivities)
   const [timeFilter, setTimeFilter] = useState('all')
   const [search, setSearch]         = useState('')
-
-  useEffect(() => {
-    getActivities()
-      .then((data) => setActivities(Array.isArray(data) ? data : []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
 
   const filtered = useMemo(() => {
     const threshold = getDateThreshold(timeFilter)

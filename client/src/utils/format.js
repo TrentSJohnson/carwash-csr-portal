@@ -1,3 +1,15 @@
+export function getDescription(activity) {
+  return activity.notes
+    ? `${activity.action_taken}: ${activity.notes}`
+    : activity.action_taken
+}
+
+export function formatMemberName(member) {
+  return member?.first_name || member?.last_name
+    ? `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()
+    : '—'
+}
+
 export function getDateThreshold(rangeId) {
   const now = new Date()
   if (rangeId === '24h')   return new Date(now - 24 * 60 * 60 * 1000)
