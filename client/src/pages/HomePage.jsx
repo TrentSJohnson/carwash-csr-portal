@@ -1,17 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMembers, getActivities, getTransactions } from '../services/api'
-
-function formatDate(ts) {
-  const d = new Date(ts)
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  const hours = d.getHours()
-  const minutes = String(d.getMinutes()).padStart(2, '0')
-  const ampm = hours >= 12 ? 'PM' : 'AM'
-  const h = String(hours % 12 || 12).padStart(2, '0')
-  return `${month}/${day} ${h}:${minutes} ${ampm}`
-}
+import { formatDateTime } from '../utils/format'
 
 function getDescription(activity) {
   return activity.notes
@@ -140,13 +130,15 @@ export default function HomePage() {
                     {a.csr_id}
                   </td>
                   <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    {a.member_name ?? '—'}
+                    {a.member_id?.first_name || a.member_id?.last_name
+                      ? `${a.member_id.first_name ?? ''} ${a.member_id.last_name ?? ''}`.trim()
+                      : '—'}
                   </td>
                   <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
                     {getDescription(a)}
                   </td>
                   <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    {formatDate(a.timestamp)}
+                    {formatDateTime(a.timestamp)}
                   </td>
                   <td className="px-3.5 py-2.5 text-[13px] border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
                     <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-status-success-bg text-status-success-text">

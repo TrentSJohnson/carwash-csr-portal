@@ -2,41 +2,23 @@ import { useState, useEffect, useMemo } from 'react'
 import { getTransactions } from '../services/api'
 import DateRangeSelect from '../components/DateRangeSelect'
 import SearchBar from '../components/SearchBar'
+import StatusBadge from '../components/StatusBadge'
+import DataTable, { tdClass } from '../components/DataTable'
+import useStatusFilter from '../hooks/useStatusFilter'
+import { formatDateTime, getDateThreshold } from '../utils/format'
 
 const STATUS_FILTERS = [
-  { id: 'all', label: 'All Statuses' },
-  { id: 'Pending', label: 'Pending' },
-  { id: 'Failed', label: 'Failed' },
-  { id: 'Success', label: 'Success' },
+  { id: 'all',     label: 'All Statuses' },
+  { id: 'Pending', label: 'Pending'      },
+  { id: 'Failed',  label: 'Failed'       },
+  { id: 'Success', label: 'Success'      },
 ]
-
-const STATUS_STYLES = {
-  Failed:  'bg-status-failed-bg text-status-failed-text',
-  Success: 'bg-status-success-bg text-status-success-text',
-  Pending: 'bg-status-pending-bg text-status-pending-text',
-}
-
-function formatDate(ts) {
-  const d = new Date(ts)
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day   = String(d.getDate()).padStart(2, '0')
-  const year  = d.getFullYear()
-  return `${month}/${day}/${year}`
-}
-
-function getDateThreshold(rangeId) {
-  const now = new Date()
-  if (rangeId === '24h') return new Date(now - 24 * 60 * 60 * 1000)
-  if (rangeId === '7d')  return new Date(now - 7 * 24 * 60 * 60 * 1000)
-  if (rangeId === 'month') return new Date(now.getFullYear(), now.getMonth(), 1)
-  return null
-}
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading]           = useState(true)
   const [error, setError]               = useState(null)
-  const [selectedStatuses, setSelectedStatuses] = useState(new Set(['all']))
+  const { selectedStatuses, toggleStatus } = useStatusFilter()
   const [dateRange, setDateRange]       = useState('all')
   const [search, setSearch]             = useState('')
 
@@ -46,21 +28,6 @@ export default function TransactionsPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
-
-  function toggleStatus(id) {
-    setSelectedStatuses((prev) => {
-      const next = new Set(prev)
-      if (id === 'all') return new Set(['all'])
-      next.delete('all')
-      if (next.has(id)) {
-        next.delete(id)
-        if (next.size === 0) return new Set(['all'])
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-  }
 
   const filtered = useMemo(() => {
     const threshold = getDateThreshold(dateRange)
@@ -98,9 +65,7 @@ export default function TransactionsPage() {
           ))}
         </div>
 
-        <div>
-          <DateRangeSelect value={dateRange} onChange={setDateRange} />
-        </div>
+        <DateRangeSelect value={dateRange} onChange={setDateRange} />
       </aside>
 
       <section className="flex-1 p-5 px-6 overflow-auto">
@@ -112,74 +77,22 @@ export default function TransactionsPage() {
         {error   && <p className="text-[13px] text-error py-3">{error}</p>}
 
         {!loading && !error && (
-          <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
-            <thead>
-              <tr className="bg-surface-alt border-b-2 border-line-header">
-                {['ID', 'Member', 'Email', 'Vehicle', 'Make/Model', 'State', 'Plan', 'Sub Status', 'Sub Start', 'Amount', 'Status', 'Timestamp', 'Created At'].map((col) => (
-                  <th key={col} className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted whitespace-nowrap">
-                    {col}
-                  </th>
-                ))}
+
+          <DataTable
+            cols={['ID', 'Member', 'Vehicle', 'Plan', 'Amount', 'Status', 'Date']}
+            empty="No transactions found."
+            rows={filtered.map((t) => (
+              <tr key={t._id ?? t.id} className="group">
+                <td className={tdClass}>{t._id ?? t.id}</td>
+                <td className={tdClass}>{t.member_id?.first_name} {t.member_id?.last_name}</td>
+                <td className={tdClass}>{t.subscription_id?.vehicle_id?.license_plate}</td>
+                <td className={tdClass}>{t.subscription_id?.plan_id?.plan_name}</td>
+                <td className={tdClass}>{t.amount}</td>
+                <td className={tdClass}><StatusBadge value={t.status} /></td>
+                <td className={tdClass}>{formatDateTime(t.timestamp ?? t.createdAt)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={13} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
-                    No transactions found.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((t) => (
-                  <tr key={t._id ?? t.id} className="group">
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover font-mono text-[11px]">
-                      {t._id ?? t.id}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
-                      {t.member_id?.first_name} {t.member_id?.last_name}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {t.member_id?.email}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
-                      {t.subscription_id?.vehicle_id?.license_plate}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
-                      {t.subscription_id?.vehicle_id?.make_model}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      {t.subscription_id?.vehicle_id?.state}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
-                      {t.subscription_id?.plan_id?.plan_name}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[t.subscription_id?.status] ?? 'bg-line text-muted'}`}>
-                        {t.subscription_id?.status}
-                      </span>
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
-                      {t.subscription_id?.start_date ? formatDate(t.subscription_id.start_date) : '—'}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      ${t.amount}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[t.status] ?? 'bg-line text-muted'}`}>
-                        {t.status}
-                      </span>
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
-                      {t.timestamp ? formatDate(t.timestamp) : '—'}
-                    </td>
-                    <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover whitespace-nowrap">
-                      {t.createdAt ? formatDate(t.createdAt) : '—'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+            ))}
+          />
         )}
       </section>
     </div>

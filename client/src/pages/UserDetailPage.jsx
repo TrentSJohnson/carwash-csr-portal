@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import useFormModal from '../hooks/useFormModal'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   getMember,
@@ -13,246 +14,83 @@ import {
   getPlans,
   updateSubscription,
 } from '../services/api'
-
-const STATUS_STYLES = {
-  Active:    'bg-status-success-bg text-status-success-text',
-  Inactive:  'bg-status-pending-bg text-status-pending-text',
-  Suspended: 'bg-status-failed-bg text-status-failed-text',
-  Paused:    'bg-status-pending-bg text-status-pending-text',
-  Overdue:   'bg-status-failed-bg text-status-failed-text',
-  Canceled:  'bg-line text-muted',
-  Success:   'bg-status-success-bg text-status-success-text',
-  Failed:    'bg-status-failed-bg text-status-failed-text',
-  Pending:   'bg-status-pending-bg text-status-pending-text',
-}
-
-function StatusBadge({ value }) {
-  return (
-    <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[value] ?? 'bg-line text-muted'}`}>
-      {value}
-    </span>
-  )
-}
-
-function formatDate(ts) {
-  if (!ts) return '—'
-  const d = new Date(ts)
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })
-}
-
-function SectionTable({ title, cols, rows, empty, headerAction }) {
-  return (
-    <div className="mb-7">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-[13px] font-semibold text-brand">{title}</h3>
-        {headerAction}
-      </div>
-      <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
-        <thead>
-          <tr className="bg-surface-alt border-b-2 border-line-header">
-            {cols.map((c) => (
-              <th key={c} className="text-left px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.4px] text-muted">
-                {c}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length === 0 ? (
-            <tr>
-              <td colSpan={cols.length} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
-                {empty}
-              </td>
-            </tr>
-          ) : rows}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-const tdClass = 'px-3.5 py-2 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover'
+import StatusBadge from '../components/StatusBadge'
+import Modal from '../components/Modal'
+import FormField, { inputClass } from '../components/FormField'
+import DataTable, { tdClass } from '../components/DataTable'
+import { formatDate, formatDateTime } from '../utils/format'
 
 function EditMemberModal({ member, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    first_name:     member.first_name     ?? '',
-    last_name:      member.last_name      ?? '',
-    email:          member.email          ?? '',
-    phone:          member.phone          ?? '',
-    account_status: member.account_status ?? 'Active',
-  })
-  const [saving, setSaving] = useState(false)
-  const [err, setErr]       = useState(null)
-
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setErr(null)
-    try {
-      const updated = await updateMember(member._id, form)
-      onSaved(updated)
-    } catch (e) {
-      setErr(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+  const { form, saving, err, handleChange, handleSubmit } = useFormModal(
+    {
+      first_name:     member.first_name     ?? '',
+      last_name:      member.last_name      ?? '',
+      email:          member.email          ?? '',
+      phone:          member.phone          ?? '',
+      account_status: member.account_status ?? 'Active',
+    },
+    async (form) => { onSaved(await updateMember(member._id, form)) },
+  )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-surface rounded-xl shadow-xl w-full max-w-sm p-6">
-        <h2 className="text-[14px] font-semibold text-body mb-4">Edit Member Info</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {[
-            { label: 'First Name', name: 'first_name' },
-            { label: 'Last Name',  name: 'last_name'  },
-            { label: 'Email',      name: 'email'      },
-            { label: 'Phone',      name: 'phone'      },
-          ].map(({ label, name }) => (
-            <div key={name}>
-              <label className="block text-[11px] text-muted mb-0.5">{label}</label>
-              <input
-                name={name}
-                value={form[name]}
-                onChange={handleChange}
-                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-              />
-            </div>
+    <Modal title="Edit Member Info" onClose={onClose} onSubmit={handleSubmit} saving={saving}>
+      {[
+        { label: 'First Name', name: 'first_name' },
+        { label: 'Last Name',  name: 'last_name'  },
+        { label: 'Email',      name: 'email'      },
+        { label: 'Phone',      name: 'phone'      },
+      ].map(({ label, name }) => (
+        <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} />
+      ))}
+      <FormField label="Status" name="account_status">
+        <select
+          name="account_status"
+          value={form.account_status}
+          onChange={handleChange}
+          className={inputClass}
+        >
+          {['Active', 'Inactive', 'Suspended'].map((s) => (
+            <option key={s} value={s}>{s}</option>
           ))}
-          <div>
-            <label className="block text-[11px] text-muted mb-0.5">Status</label>
-            <select
-              name="account_status"
-              value={form.account_status}
-              onChange={handleChange}
-              className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              {['Active', 'Inactive', 'Suspended'].map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-          {err && <p className="text-[12px] text-error">{err}</p>}
-          <div className="flex justify-end gap-2 mt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 text-[12px] rounded-md border border-line text-muted hover:bg-surface-alt"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
-            >
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        </select>
+      </FormField>
+      {err && <p className="text-[12px] text-error">{err}</p>}
+    </Modal>
   )
 }
 
 function AddVehicleModal({ memberId, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    make_model:    '',
-    license_plate: '',
-    state:         '',
-    rfid_tag_id:   '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [err, setErr]       = useState(null)
-
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setErr(null)
-    try {
-      const vehicle = await createVehicle({ ...form, member_id: memberId })
-      onSaved(vehicle)
-    } catch (e) {
-      setErr(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+  const { form, saving, err, handleChange, handleSubmit } = useFormModal(
+    { make_model: '', license_plate: '', state: '', rfid_tag_id: '' },
+    async (form) => { onSaved(await createVehicle({ ...form, member_id: memberId })) },
+  )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-surface rounded-xl shadow-xl w-full max-w-sm p-6">
-        <h2 className="text-[14px] font-semibold text-body mb-4">Add Vehicle</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {[
-            { label: 'Make / Model',  name: 'make_model'    },
-            { label: 'License Plate', name: 'license_plate', required: true },
-            { label: 'State',         name: 'state'          },
-            { label: 'RFID Tag ID',   name: 'rfid_tag_id'    },
-          ].map(({ label, name, required }) => (
-            <div key={name}>
-              <label className="block text-[11px] text-muted mb-0.5">{label}{required && ' *'}</label>
-              <input
-                name={name}
-                value={form[name]}
-                onChange={handleChange}
-                required={required}
-                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-              />
-            </div>
-          ))}
-          {err && <p className="text-[12px] text-error">{err}</p>}
-          <div className="flex justify-end gap-2 mt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 text-[12px] rounded-md border border-line text-muted hover:bg-surface-alt"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
-            >
-              {saving ? 'Saving…' : 'Add Vehicle'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Modal title="Add Vehicle" onClose={onClose} onSubmit={handleSubmit} saving={saving} submitLabel="Add Vehicle">
+      {[
+        { label: 'Make / Model',  name: 'make_model'    },
+        { label: 'License Plate', name: 'license_plate', required: true },
+        { label: 'State',         name: 'state'          },
+        { label: 'RFID Tag ID',   name: 'rfid_tag_id'    },
+      ].map(({ label, name, required }) => (
+        <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} required={required} />
+      ))}
+      {err && <p className="text-[12px] text-error">{err}</p>}
+    </Modal>
   )
 }
 
 function EditVehicleModal({ vehicle, subscription, plans, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    make_model:    vehicle.make_model    ?? '',
-    license_plate: vehicle.license_plate ?? '',
-    state:         vehicle.state         ?? '',
-    rfid_tag_id:   vehicle.rfid_tag_id   ?? '',
-    plan_id:       subscription?.plan_id?._id ?? subscription?.plan_id ?? '',
-    sub_status:    subscription?.status ?? '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [err, setErr]       = useState(null)
-
-  function handleChange(e) {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    setSaving(true)
-    setErr(null)
-    try {
+  const { form, saving, err, handleChange, handleSubmit } = useFormModal(
+    {
+      make_model:    vehicle.make_model    ?? '',
+      license_plate: vehicle.license_plate ?? '',
+      state:         vehicle.state         ?? '',
+      rfid_tag_id:   vehicle.rfid_tag_id   ?? '',
+      plan_id:       subscription?.plan_id?._id ?? subscription?.plan_id ?? '',
+      sub_status:    subscription?.status ?? '',
+    },
+    async (form) => {
       const { plan_id, sub_status, ...vehicleFields } = form
       const updatedVehicle = await updateVehicle(vehicle._id, vehicleFields)
 
@@ -267,84 +105,40 @@ function EditVehicleModal({ vehicle, subscription, plans, onClose, onSaved }) {
       }
 
       onSaved(updatedVehicle, updatedSub)
-    } catch (e) {
-      setErr(e.message)
-    } finally {
-      setSaving(false)
-    }
-  }
+    },
+  )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-surface rounded-xl shadow-xl w-full max-w-sm p-6">
-        <h2 className="text-[14px] font-semibold text-body mb-4">Edit Vehicle</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {[
-            { label: 'Make / Model', name: 'make_model' },
-            { label: 'License Plate', name: 'license_plate' },
-            { label: 'State', name: 'state' },
-            { label: 'RFID Tag ID', name: 'rfid_tag_id' },
-          ].map(({ label, name }) => (
-            <div key={name}>
-              <label className="block text-[11px] text-muted mb-0.5">{label}</label>
-              <input
-                name={name}
-                value={form[name]}
-                onChange={handleChange}
-                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-              />
-            </div>
-          ))}
-          {subscription && plans.length > 0 && (
-            <div>
-              <label className="block text-[11px] text-muted mb-0.5">Plan</label>
-              <select
-                name="plan_id"
-                value={form.plan_id}
-                onChange={handleChange}
-                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-              >
-                {plans.map((p) => (
-                  <option key={p._id} value={p._id}>{p.plan_name}</option>
-                ))}
-              </select>
-            </div>
-          )}
-          {subscription && (
-            <div>
-              <label className="block text-[11px] text-muted mb-0.5">Subscription Status</label>
-              <select
-                name="sub_status"
-                value={form.sub_status}
-                onChange={handleChange}
-                className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
-              >
-                {['Active', 'Inactive', 'Suspended', 'Paused', 'Overdue', 'Canceled'].map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-          )}
-          {err && <p className="text-[12px] text-error">{err}</p>}
-          <div className="flex justify-end gap-2 mt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3 py-1.5 text-[12px] rounded-md border border-line text-muted hover:bg-surface-alt"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-3 py-1.5 text-[12px] rounded-md bg-accent text-white hover:bg-accent/90 disabled:opacity-50"
-            >
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+    <Modal title="Edit Vehicle" onClose={onClose} onSubmit={handleSubmit} saving={saving}>
+      {[
+        { label: 'Make / Model', name: 'make_model' },
+        { label: 'License Plate', name: 'license_plate' },
+        { label: 'State', name: 'state' },
+        { label: 'RFID Tag ID', name: 'rfid_tag_id' },
+      ].map(({ label, name }) => (
+        <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} />
+      ))}
+      {subscription && plans.length > 0 && (
+        <FormField label="Plan" name="plan_id">
+          <select name="plan_id" value={form.plan_id} onChange={handleChange} className={inputClass}>
+            {plans.map((p) => (
+              <option key={p._id} value={p._id}>{p.plan_name}</option>
+            ))}
+          </select>
+        </FormField>
+      )}
+      {subscription && (
+        <FormField label="Subscription Status" name="sub_status">
+          <select name="sub_status" value={form.sub_status} onChange={handleChange} className={inputClass}>
+            {['Active', 'Paused', 'Overdue', 'Canceled'].map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </FormField>
+      )}
+      {err && <p className="text-[12px] text-error">{err}</p>}
+    </Modal>
   )
 }
 
@@ -412,14 +206,12 @@ export default function UserDetailPage() {
   function handleVehicleSaved(updatedVehicle, updatedSub) {
     setVehicles((prev) => prev.map((v) => (v._id === updatedVehicle._id ? updatedVehicle : v)))
     if (updatedSub) {
-      // Re-fetch subscriptions to get fully populated plan_id
       getMemberSubscriptions(id).then(setSubscriptions).catch(() => {})
     }
     setEditingVehicle(null)
     refreshActivities()
   }
 
-  // Build a vehicle_id → subscription map for the vehicles table
   const subByVehicle = Object.fromEntries(
     subscriptions.map((s) => [s.vehicle_id?._id ?? s.vehicle_id, s])
   )
@@ -430,7 +222,6 @@ export default function UserDetailPage() {
 
   return (
     <div className="flex h-full">
-      {/* Left panel — account info */}
       <aside className="w-52 py-5 px-4 bg-surface border-r border-line-strong shrink-0 flex flex-col gap-4">
         <button
           onClick={() => navigate('/users')}
@@ -504,9 +295,8 @@ export default function UserDetailPage() {
         />
       )}
 
-      {/* Right panel — tables */}
       <section className="flex-1 p-6 overflow-auto">
-        <SectionTable
+        <DataTable
           title="Vehicles"
           cols={['Vehicle', 'License #', 'State', 'RFID', 'Plan', 'Sub Status', '']}
           empty="No vehicles on file."
@@ -557,27 +347,27 @@ export default function UserDetailPage() {
           })}
         />
 
-        <SectionTable
+        <DataTable
           title="Transactions"
           cols={['Amount', 'Date', 'Status']}
           empty="No transactions found."
           rows={transactions.map((t) => (
             <tr key={t._id} className="group">
               <td className={tdClass}>${t.amount?.toFixed(2)}</td>
-              <td className={tdClass}>{formatDate(t.timestamp)}</td>
+              <td className={tdClass}>{formatDateTime(t.timestamp)}</td>
               <td className={tdClass}><StatusBadge value={t.status} /></td>
             </tr>
           ))}
         />
 
-        <SectionTable
+        <DataTable
           title="Activity"
           cols={['Action', 'Date', 'CSR Rep', 'Notes']}
           empty="No activity on record."
           rows={activities.map((a) => (
             <tr key={a._id} className="group">
               <td className={tdClass}>{a.action_taken}</td>
-              <td className={tdClass}>{formatDate(a.timestamp)}</td>
+              <td className={tdClass}>{formatDateTime(a.timestamp)}</td>
               <td className={tdClass}>{a.csr_id ?? '—'}</td>
               <td className={tdClass}>{a.notes ?? '—'}</td>
             </tr>
