@@ -26,6 +26,12 @@ export const updateMember = async (req, res) => {
     runValidators: true,
   });
   if (!member) return res.status(404).json({ message: 'Member not found' });
+  await Activity.create({
+    member_id:    member._id,
+    csr_id:       'Test_CSR_Rep',
+    action_taken: 'Edit Info',
+    notes:        `Updated member info for ${member.first_name} ${member.last_name}`,
+  });
   res.json(member);
 };
 
