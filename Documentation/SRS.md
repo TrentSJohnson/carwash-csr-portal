@@ -2,17 +2,17 @@
 
 ## 1. Introduction
 ### 1.1 Purpose
-The purpose of this document is to define the functional and non-functional requirements for the AMP Customer Service Representative (CSR) Portal. This portal is designed to empower support staff to manage car wash memberships, handle billing inquiries, and resolve account-related issues efficiently.
+The purpose of this document is to define the functional and non-functional requirements for the  Customer Service Representative (CSR) Portal. This portal is designed to empower support staff to manage car wash memberships, handle billing inquiries, and resolve account-related issues efficiently.
 
 ### 1.2 Scope
-The CSR Portal is a front-end web application that interfaces with the AMP membership and loyalty platform. It focuses on user lookup, subscription management (canceling, transferring, adding), and account modification for the car wash membership ecosystem.
+The CSR Portal is a front-end web application that interfaces with the  membership and loyalty platform. It focuses on user lookup, subscription management (canceling, transferring, adding), and account modification for the car wash membership ecosystem.
 
 ---
 
 ## 2. General Description
 ### 2.1 User Classes
 * **Customer Service Representative (CSR):** The primary user. They require a high-density, high-speed interface to assist customers over the phone.
-* **System Administrator (Implicit):** Responsible for maintaining the portal and ensuring data integrity between the portal and the AMP backend.
+* **System Administrator (Implicit):** Responsible for maintaining the portal and ensuring data integrity between the portal and the  backend.
 
 ### 2.2 Design Constraints
 * **Front-End Only:** The scope of this specific deliverable is the client-side implementation.
