@@ -12,7 +12,7 @@ export default function Layout() {
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between px-5 h-12 bg-brand text-white shrink-0">
         <span className="font-semibold text-[15px] tracking-[0.5px]">CSR Portal</span>
-        <span className="text-[13px] text-dim">Trent J. 👤</span>
+        <span className="text-[13px] text-dim">Test_CSR_Rep 👤</span>
       </header>
       <div className="flex flex-1 overflow-hidden">
         <nav className="w-20 bg-brand flex flex-col pt-3 shrink-0">
