@@ -1,4 +1,4 @@
-# Software Requirements Specification (SRS): AMP CSR Portal
+# Software Requirements Specification (SRS): CSR Portal
 
 ## 1. Introduction
 ### 1.1 Purpose
