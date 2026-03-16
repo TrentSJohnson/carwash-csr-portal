@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import useFormModal from '../hooks/useFormModal'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -15,10 +15,34 @@ import {
   updateSubscription,
 } from '../services/api'
 import StatusBadge from '../components/StatusBadge'
+import { ACCOUNT_STATUSES } from '../utils/statusStyles'
 import Modal from '../components/Modal'
-import FormField, { inputClass } from '../components/FormField'
+import FormField from '../components/FormField'
+import { inputClass } from '../utils/formStyles'
 import DataTable, { tdClass } from '../components/DataTable'
 import { formatDate, formatDateTime } from '../utils/format'
+
+const MEMBER_FIELDS = [
+  { label: 'First Name', name: 'first_name' },
+  { label: 'Last Name',  name: 'last_name'  },
+  { label: 'Email',      name: 'email'      },
+  { label: 'Phone',      name: 'phone'      },
+]
+
+const VEHICLE_FIELDS = [
+  { label: 'Make / Model',  name: 'make_model'              },
+  { label: 'License Plate', name: 'license_plate', required: true },
+  { label: 'State',         name: 'state'                   },
+  { label: 'RFID Tag ID',   name: 'rfid_tag_id'             },
+]
+
+function PencilIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M13.586 3.586a2 2 0 112.828 2.828l-9 9A2 2 0 016 16H4a1 1 0 01-1-1v-2a2 2 0 01.586-1.414l9-9z" />
+    </svg>
+  )
+}
 
 function EditMemberModal({ member, onClose, onSaved }) {
   const { form, saving, err, handleChange, handleSubmit } = useFormModal(
@@ -34,12 +58,7 @@ function EditMemberModal({ member, onClose, onSaved }) {
 
   return (
     <Modal title="Edit Member Info" onClose={onClose} onSubmit={handleSubmit} saving={saving}>
-      {[
-        { label: 'First Name', name: 'first_name' },
-        { label: 'Last Name',  name: 'last_name'  },
-        { label: 'Email',      name: 'email'      },
-        { label: 'Phone',      name: 'phone'      },
-      ].map(({ label, name }) => (
+      {MEMBER_FIELDS.map(({ label, name }) => (
         <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} />
       ))}
       <FormField label="Status" name="account_status">
@@ -49,7 +68,7 @@ function EditMemberModal({ member, onClose, onSaved }) {
           onChange={handleChange}
           className={inputClass}
         >
-          {['Active', 'Inactive', 'Suspended'].map((s) => (
+          {ACCOUNT_STATUSES.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
@@ -67,12 +86,7 @@ function AddVehicleModal({ memberId, onClose, onSaved }) {
 
   return (
     <Modal title="Add Vehicle" onClose={onClose} onSubmit={handleSubmit} saving={saving} submitLabel="Add Vehicle">
-      {[
-        { label: 'Make / Model',  name: 'make_model'    },
-        { label: 'License Plate', name: 'license_plate', required: true },
-        { label: 'State',         name: 'state'          },
-        { label: 'RFID Tag ID',   name: 'rfid_tag_id'    },
-      ].map(({ label, name, required }) => (
+      {VEHICLE_FIELDS.map(({ label, name, required }) => (
         <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} required={required} />
       ))}
       {err && <p className="text-[12px] text-error">{err}</p>}
@@ -109,14 +123,8 @@ function EditVehicleModal({ vehicle, subscription, plans, onClose, onSaved }) {
   )
 
   return (
-
     <Modal title="Edit Vehicle" onClose={onClose} onSubmit={handleSubmit} saving={saving}>
-      {[
-        { label: 'Make / Model', name: 'make_model' },
-        { label: 'License Plate', name: 'license_plate' },
-        { label: 'State', name: 'state' },
-        { label: 'RFID Tag ID', name: 'rfid_tag_id' },
-      ].map(({ label, name }) => (
+      {VEHICLE_FIELDS.map(({ label, name }) => (
         <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} />
       ))}
       {subscription && plans.length > 0 && (
@@ -205,15 +213,15 @@ export default function UserDetailPage() {
 
   function handleVehicleSaved(updatedVehicle, updatedSub) {
     setVehicles((prev) => prev.map((v) => (v._id === updatedVehicle._id ? updatedVehicle : v)))
-    if (updatedSub) {
-      getMemberSubscriptions(id).then(setSubscriptions).catch(() => {})
-    }
     setEditingVehicle(null)
-    refreshActivities()
+    const refreshes = [refreshActivities()]
+    if (updatedSub) refreshes.push(getMemberSubscriptions(id).then(setSubscriptions).catch(() => {}))
+    Promise.all(refreshes)
   }
 
-  const subByVehicle = Object.fromEntries(
-    subscriptions.map((s) => [s.vehicle_id?._id ?? s.vehicle_id, s])
+  const subByVehicle = useMemo(
+    () => Object.fromEntries(subscriptions.map((s) => [s.vehicle_id?._id ?? s.vehicle_id, s])),
+    [subscriptions],
   )
 
   if (loading) return <p className="p-6 text-[13px] text-muted">Loading...</p>
@@ -240,21 +248,14 @@ export default function UserDetailPage() {
               title="Edit member info"
               className="text-accent hover:text-accent/70"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M13.586 3.586a2 2 0 112.828 2.828l-9 9A2 2 0 016 16H4a1 1 0 01-1-1v-2a2 2 0 01.586-1.414l9-9z" />
-              </svg>
+              <PencilIcon />
             </button>
           </div>
 
-          {[
-            { label: 'First Name', value: member.first_name },
-            { label: 'Last Name',  value: member.last_name  },
-            { label: 'Email',      value: member.email      },
-            { label: 'Phone',      value: member.phone ?? '—' },
-          ].map(({ label, value }) => (
+          {MEMBER_FIELDS.map(({ label, name }) => (
             <div key={label} className="mb-3">
               <p className="text-[11px] text-muted mb-0.5">{label}</p>
-              <p className="text-[13px] text-body break-all">{value}</p>
+              <p className="text-[13px] text-body break-all">{name === 'phone' ? (member.phone ?? '—') : member[name]}</p>
             </div>
           ))}
 
@@ -327,9 +328,7 @@ export default function UserDetailPage() {
                       title="Edit vehicle"
                       className="text-accent hover:text-accent/70"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-9 9A2 2 0 016 16H4a1 1 0 01-1-1v-2a2 2 0 01.586-1.414l9-9z" />
-                      </svg>
+                      <PencilIcon />
                     </button>
                     <button
                       onClick={() => handleDeleteVehicle(v)}

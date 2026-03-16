@@ -1,30 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMembers, getActivities, getTransactions } from '../services/api'
-import { formatDateTime } from '../utils/format'
-
-function getDescription(activity) {
-  return activity.notes
-    ? `${activity.action_taken}: ${activity.notes}`
-    : activity.action_taken
-}
+import DataTable, { tdClass } from '../components/DataTable'
+import useFetch from '../hooks/useFetch'
+import { formatDateTime, getDescription, formatMemberName } from '../utils/format'
 
 export default function HomePage() {
-  const [members, setMembers] = useState([])
-  const [activities, setActivities] = useState([])
-  const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: members,      loading: lm, error: em } = useFetch(getMembers)
+  const { data: activities,   loading: la, error: ea } = useFetch(getActivities)
+  const { data: transactions, loading: lt, error: et } = useFetch(getTransactions)
+  const loading = lm || la || lt
+  const error   = em || ea || et
   const navigate = useNavigate()
-
-  useEffect(() => {
-    Promise.all([getMembers(), getActivities(), getTransactions()])
-      .then(([m, a, t]) => {
-        setMembers(Array.isArray(m) ? m : [])
-        setActivities(Array.isArray(a) ? a : [])
-        setTransactions(Array.isArray(t) ? t : [])
-      })
-      .finally(() => setLoading(false))
-  }, [])
 
   const overdueCount = useMemo(
     () => transactions.filter((t) => t.status === 'Failed' || t.status === 'Pending').length,
@@ -35,8 +22,6 @@ export default function HomePage() {
     () => members.filter((m) => m.account_status === 'Active').length,
     [members]
   )
-
-  const recentActivities = useMemo(() => activities.slice(0, 10), [activities])
 
   const statCards = [
     {
@@ -84,11 +69,7 @@ export default function HomePage() {
                 {card.label}
               </span>
             </div>
-            {loading ? (
-              <div className="text-[22px] font-bold text-brand">—</div>
-            ) : (
-              <div className="text-[22px] font-bold text-brand">{card.value}</div>
-            )}
+            <div className="text-[22px] font-bold text-brand">{loading ? '—' : card.value}</div>
             <div className="text-[11px] text-faint mt-0.5">{card.sub}</div>
           </button>
         ))}
@@ -97,59 +78,30 @@ export default function HomePage() {
       <h2 className="text-[15px] font-semibold text-brand mb-3">Recent Activity</h2>
 
       {loading && <p className="text-[13px] text-muted py-3">Loading...</p>}
+      {error   && <p className="text-[13px] text-error py-3">{error}</p>}
 
-      {!loading && (
-        <table className="w-full border-collapse bg-surface rounded-lg overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.07)]">
-          <thead>
-            <tr className="bg-surface-alt border-b-2 border-line-header">
-              {['Rep', 'Name', 'Action', 'Time', 'Status'].map((col) => (
-                <th
-                  key={col}
-                  className="text-left px-3.5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.4px] text-muted"
-                >
-                  {col}
-                </th>
-              ))}
+      {!loading && !error && (
+        <DataTable
+          cols={['Rep', 'Name', 'Action', 'Time', 'Status']}
+          empty="No recent activity."
+          rows={activities.slice(0, 10).map((a) => (
+            <tr
+              key={a._id}
+              className="group cursor-pointer"
+              onClick={() => a.member_id && navigate(`/users/${a.member_id._id ?? a.member_id}`)}
+            >
+              <td className={tdClass}>{a.csr_id}</td>
+              <td className={tdClass}>{formatMemberName(a.member_id)}</td>
+              <td className={tdClass}>{getDescription(a)}</td>
+              <td className={tdClass}>{formatDateTime(a.timestamp)}</td>
+              <td className={tdClass}>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-status-success-bg text-status-success-text">
+                  Logged
+                </span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {recentActivities.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3.5 py-2.5 text-[13px] text-center text-faint italic">
-                  No recent activity.
-                </td>
-              </tr>
-            ) : (
-              recentActivities.map((a) => (
-                <tr
-                  key={a._id}
-                  className="group cursor-pointer"
-                  onClick={() => a.member_id && navigate(`/users/${a.member_id._id ?? a.member_id}`)}
-                >
-                  <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    {a.csr_id}
-                  </td>
-                  <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    {a.member_id?.first_name || a.member_id?.last_name
-                      ? `${a.member_id.first_name ?? ''} ${a.member_id.last_name ?? ''}`.trim()
-                      : '—'}
-                  </td>
-                  <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    {getDescription(a)}
-                  </td>
-                  <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    {formatDateTime(a.timestamp)}
-                  </td>
-                  <td className="px-3.5 py-2.5 text-[13px] border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-status-success-bg text-status-success-text">
-                      Logged
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+          ))}
+        />
       )}
     </div>
   )

@@ -1,14 +1,24 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getMembers, createMember } from '../services/api'
 import StatusBadge from '../components/StatusBadge'
+import { ACCOUNT_STATUSES } from '../utils/statusStyles'
 import Modal from '../components/Modal'
 import SearchBar from '../components/SearchBar'
-import FormField, { inputClass } from '../components/FormField'
+import FormField from '../components/FormField'
+import { inputClass } from '../utils/formStyles'
 import DataTable, { tdClass } from '../components/DataTable'
 import useStatusFilter from '../hooks/useStatusFilter'
 import useFormModal from '../hooks/useFormModal'
+import useFetch from '../hooks/useFetch'
 import { formatDate } from '../utils/format'
+
+const MEMBER_FIELDS = [
+  { label: 'First Name', name: 'first_name' },
+  { label: 'Last Name',  name: 'last_name'  },
+  { label: 'Email',      name: 'email'      },
+  { label: 'Phone',      name: 'phone'      },
+]
 
 const STATUS_FILTERS = [
   { id: 'all',       label: 'All Statuses' },
@@ -25,12 +35,7 @@ function AddUserModal({ onClose, onCreated }) {
 
   return (
     <Modal title="Add User" onClose={onClose} onSubmit={handleSubmit} saving={saving} submitLabel="Add User">
-      {[
-        { label: 'First Name', name: 'first_name' },
-        { label: 'Last Name',  name: 'last_name'  },
-        { label: 'Email',      name: 'email'      },
-        { label: 'Phone',      name: 'phone'      },
-      ].map(({ label, name }) => (
+      {MEMBER_FIELDS.map(({ label, name }) => (
         <FormField key={name} label={label} name={name} value={form[name]} onChange={handleChange} />
       ))}
       <FormField label="Status" name="account_status">
@@ -40,7 +45,7 @@ function AddUserModal({ onClose, onCreated }) {
           onChange={handleChange}
           className={inputClass}
         >
-          {['Active', 'Inactive', 'Suspended'].map((s) => (
+          {ACCOUNT_STATUSES.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
         </select>
@@ -51,31 +56,20 @@ function AddUserModal({ onClose, onCreated }) {
 }
 
 export default function UsersPage() {
-  const [members, setMembers]   = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
+  const { data: members, setData: setMembers, loading, error } = useFetch(getMembers)
   const { selectedStatuses, toggleStatus } = useStatusFilter()
   const [searchParams] = useSearchParams()
   const [search, setSearch]     = useState(searchParams.get('q') ?? '')
   const [showAdd, setShowAdd]   = useState(false)
   const navigate = useNavigate()
 
-  useEffect(() => {
-    getMembers()
-      .then((data) => setMembers(Array.isArray(data) ? data : []))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
-
   const filtered = useMemo(() => {
     return members.filter((m) => {
       if (!selectedStatuses.has('all') && !selectedStatuses.has(m.account_status)) return false
       if (search) {
         const q = search.toLowerCase()
-        const name  = `${m.first_name} ${m.last_name}`.toLowerCase()
-        const email = (m.email ?? '').toLowerCase()
-        const phone = (m.phone ?? '').toLowerCase()
-        if (!name.includes(q) && !email.includes(q) && !phone.includes(q)) return false
+        const fields = [`${m.first_name} ${m.last_name}`, m.email ?? '', m.phone ?? '']
+        if (!fields.some((f) => f.toLowerCase().includes(q))) return false
       }
       return true
     })
@@ -99,7 +93,7 @@ export default function UsersPage() {
           <label key={id} className="flex items-center gap-2 text-[13px] text-body mb-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={id === 'all' ? selectedStatuses.has('all') : selectedStatuses.has(id)}
+              checked={selectedStatuses.has(id)}
               onChange={() => toggleStatus(id)}
               className="cursor-pointer accent-accent"
             />

@@ -1,3 +1,15 @@
+export function getDescription(activity) {
+  return activity.notes
+    ? `${activity.action_taken}: ${activity.notes}`
+    : activity.action_taken
+}
+
+export function formatMemberName(member) {
+  return member?.first_name || member?.last_name
+    ? `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim()
+    : '—'
+}
+
 export function getDateThreshold(rangeId) {
   const now = new Date()
   if (rangeId === '24h')   return new Date(now - 24 * 60 * 60 * 1000)
@@ -14,13 +26,8 @@ export function formatDate(ts) {
 
 export function formatDateTime(ts) {
   if (!ts) return '—'
-  const d     = new Date(ts)
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day   = String(d.getDate()).padStart(2, '0')
-  const year  = d.getFullYear()
-  const hours = d.getHours()
-  const mins  = String(d.getMinutes()).padStart(2, '0')
-  const ampm  = hours >= 12 ? 'PM' : 'AM'
-  const h     = String(hours % 12 || 12).padStart(2, '0')
-  return `${month}/${day}/${year} ${h}:${mins} ${ampm}`
+  return new Date(ts).toLocaleString('en-US', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  })
 }
