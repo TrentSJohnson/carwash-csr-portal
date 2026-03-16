@@ -6,13 +6,21 @@ export function getDateThreshold(rangeId) {
   return null
 }
 
-export function formatDate(ts, style = 'short') {
+export function formatDate(ts) {
   if (!ts) return '—'
   const d = new Date(ts)
-  if (style === 'full') {
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })
-  }
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })
+}
+
+export function formatDateTime(ts) {
+  if (!ts) return '—'
+  const d     = new Date(ts)
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const day   = String(d.getDate()).padStart(2, '0')
-  return `${month}/${day}`
+  const year  = d.getFullYear()
+  const hours = d.getHours()
+  const mins  = String(d.getMinutes()).padStart(2, '0')
+  const ampm  = hours >= 12 ? 'PM' : 'AM'
+  const h     = String(hours % 12 || 12).padStart(2, '0')
+  return `${month}/${day}/${year} ${h}:${mins} ${ampm}`
 }

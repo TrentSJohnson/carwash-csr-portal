@@ -18,7 +18,7 @@ import StatusBadge from '../components/StatusBadge'
 import Modal from '../components/Modal'
 import FormField, { inputClass } from '../components/FormField'
 import DataTable, { tdClass } from '../components/DataTable'
-import { formatDate } from '../utils/format'
+import { formatDate, formatDateTime } from '../utils/format'
 
 function EditMemberModal({ member, onClose, onSaved }) {
   const { form, saving, err, handleChange, handleSubmit } = useFormModal(
@@ -265,7 +265,7 @@ export default function UserDetailPage() {
         </div>
 
         <div className="mt-auto">
-          <p className="text-[11px] text-faint">Member since {formatDate(member.createdAt, 'full')}</p>
+          <p className="text-[11px] text-faint">Member since {formatDate(member.createdAt)}</p>
         </div>
       </aside>
 
@@ -354,7 +354,7 @@ export default function UserDetailPage() {
           rows={transactions.map((t) => (
             <tr key={t._id} className="group">
               <td className={tdClass}>${t.amount?.toFixed(2)}</td>
-              <td className={tdClass}>{formatDate(t.timestamp, 'full')}</td>
+              <td className={tdClass}>{formatDateTime(t.timestamp)}</td>
               <td className={tdClass}><StatusBadge value={t.status} /></td>
             </tr>
           ))}
@@ -367,7 +367,7 @@ export default function UserDetailPage() {
           rows={activities.map((a) => (
             <tr key={a._id} className="group">
               <td className={tdClass}>{a.action_taken}</td>
-              <td className={tdClass}>{formatDate(a.timestamp, 'full')}</td>
+              <td className={tdClass}>{formatDateTime(a.timestamp)}</td>
               <td className={tdClass}>{a.csr_id ?? '—'}</td>
               <td className={tdClass}>{a.notes ?? '—'}</td>
             </tr>

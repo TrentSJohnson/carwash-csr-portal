@@ -5,7 +5,7 @@ import SearchBar from '../components/SearchBar'
 import StatusBadge from '../components/StatusBadge'
 import DataTable, { tdClass } from '../components/DataTable'
 import useStatusFilter from '../hooks/useStatusFilter'
-import { formatDate, getDateThreshold } from '../utils/format'
+import { formatDateTime, getDateThreshold } from '../utils/format'
 
 const STATUS_FILTERS = [
   { id: 'all',     label: 'All Statuses' },
@@ -89,7 +89,7 @@ export default function TransactionsPage() {
                 <td className={tdClass}>{t.subscription_id?.plan_id?.plan_name}</td>
                 <td className={tdClass}>{t.amount}</td>
                 <td className={tdClass}><StatusBadge value={t.status} /></td>
-                <td className={tdClass}>{formatDate(t.timestamp ?? t.createdAt)}</td>
+                <td className={tdClass}>{formatDateTime(t.timestamp ?? t.createdAt)}</td>
               </tr>
             ))}
           />

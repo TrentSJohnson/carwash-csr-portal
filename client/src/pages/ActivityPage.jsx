@@ -3,7 +3,7 @@ import { getActivities } from '../services/api'
 import DateRangeSelect from '../components/DateRangeSelect'
 import SearchBar from '../components/SearchBar'
 import DataTable, { tdClass } from '../components/DataTable'
-import { formatDate, getDateThreshold } from '../utils/format'
+import { formatDateTime, getDateThreshold } from '../utils/format'
 
 function getDescription(activity) {
   return activity.notes
@@ -31,7 +31,7 @@ export default function ActivityPage() {
       if (threshold && new Date(a.timestamp) < threshold) return false
       if (search) {
         const q    = search.toLowerCase()
-        const date = formatDate(a.timestamp).toLowerCase()
+        const date = formatDateTime(a.timestamp).toLowerCase()
         const desc = getDescription(a).toLowerCase()
         const rep  = (a.csr_id || '').toLowerCase()
         if (!rep.includes(q) && !date.includes(q) && !desc.includes(q)) return false
@@ -61,7 +61,7 @@ export default function ActivityPage() {
             rows={filtered.map((a) => (
               <tr key={a._id} className="group">
                 <td className={tdClass}>{a.csr_id}</td>
-                <td className={tdClass}>{formatDate(a.timestamp)}</td>
+                <td className={tdClass}>{formatDateTime(a.timestamp)}</td>
                 <td className={tdClass}>{getDescription(a)}</td>
               </tr>
             ))}
