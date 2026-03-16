@@ -242,7 +242,7 @@ function EditVehicleModal({ vehicle, subscription, plans, onClose, onSaved }) {
                 onChange={handleChange}
                 className="w-full border border-line rounded-md px-3 py-1.5 text-[13px] text-body bg-surface focus:outline-none focus:ring-1 focus:ring-accent"
               >
-                {['Active', 'Paused', 'Overdue', 'Canceled'].map((s) => (
+                {['Active', 'Inactive', 'Suspended', 'Paused', 'Overdue', 'Canceled'].map((s) => (
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
