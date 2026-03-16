@@ -47,3 +47,28 @@ export async function getMemberActivities(id) {
   const { data } = await api.get(`/api/members/${id}/activities`)
   return data
 }
+
+export async function updateMember(id, body) {
+  const { data } = await api.put(`/api/members/${id}`, body)
+  return data
+}
+
+export async function updateVehicle(id, body) {
+  const { data } = await api.put(`/api/vehicles/${id}`, body)
+  return data
+}
+
+export async function deleteVehicle(id) {
+  const { data } = await api.delete(`/api/vehicles/${id}`)
+  return data
+}
+
+export async function getPlans() {
+  const { data } = await api.get('/api/plans')
+  return data
+}
+
+export async function updateSubscription(id, body) {
+  const { data } = await api.put(`/api/subscriptions/${id}`, body)
+  return data
+}
