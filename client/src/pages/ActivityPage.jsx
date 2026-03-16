@@ -30,11 +30,9 @@ export default function ActivityPage() {
     return activities.filter((a) => {
       if (threshold && new Date(a.timestamp) < threshold) return false
       if (search) {
-        const q    = search.toLowerCase()
-        const date = formatDateTime(a.timestamp).toLowerCase()
-        const desc = getDescription(a).toLowerCase()
-        const rep  = (a.csr_id || '').toLowerCase()
-        if (!rep.includes(q) && !date.includes(q) && !desc.includes(q)) return false
+        const q = search.toLowerCase()
+        const fields = [a.csr_id || '', formatDateTime(a.timestamp), getDescription(a)]
+        if (!fields.some((f) => f.toLowerCase().includes(q))) return false
       }
       return true
     })
