@@ -3,6 +3,7 @@
 A demo React web app built by Trent Johnson. This is a customer service representative (CSR) portal for managing car wash operations.
 
 **Live Demo:** [https://carwash-csr-portal.onrender.com/](https://carwash-csr-portal.onrender.com/)
+**Breakdown** [https://youtu.be/xZUvO-dMMOs](https://youtu.be/xZUvO-dMMOs)
 
 ## Tech Stack
 
