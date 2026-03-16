@@ -96,11 +96,9 @@ async function seed() {
   // --- Activities ---
   await Activity.insertMany([
     { member_id: alice._id,  csr_id: 'Ashley Brooks',  action_taken: 'Edit Info',   notes: 'Updated phone number per member request.',         timestamp: daysAgo(30) },
-    { member_id: marcus._id, csr_id: 'Kevin Carter',  action_taken: 'Transfer',    notes: 'Transferred subscription to new vehicle.',         timestamp: daysAgo(8) },
     { member_id: jordan._id, csr_id: 'Ashley Brooks', action_taken: 'Edit Info',   notes: 'Corrected email address.',                         timestamp: daysAgo(6) },
     { member_id: jordan._id, csr_id: 'Kevin Carter',  action_taken: 'Cancel Sub',  notes: 'Member requested pause due to travel.',            timestamp: daysAgo(1) },
     { member_id: alice._id,  csr_id: 'Kevin Carter',  action_taken: 'Edit Info',   notes: 'Added second vehicle to account.',                 timestamp: daysAgo(.5) },
-    { member_id: marcus._id, csr_id: 'Ashley Brooks', action_taken: 'Transfer',    notes: 'Member traded in old truck, updated vehicle info.', timestamp: daysAgo(0) },
   ]);
   console.log('Seeded activities');
 
