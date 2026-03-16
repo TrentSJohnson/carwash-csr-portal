@@ -21,7 +21,7 @@ export const createActivity = async (req, res) => {
 
 export const updateActivity = async (req, res) => {
   const activity = await Activity.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
+    returnDocument: 'after',
     runValidators: true,
   });
   if (!activity) return res.status(404).json({ message: 'Activity not found' });
