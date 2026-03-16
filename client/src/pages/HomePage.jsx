@@ -140,7 +140,9 @@ export default function HomePage() {
                     {a.csr_id}
                   </td>
                   <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
-                    {a.member_name ?? '—'}
+                    {a.member_id?.first_name || a.member_id?.last_name
+                      ? `${a.member_id.first_name ?? ''} ${a.member_id.last_name ?? ''}`.trim()
+                      : '—'}
                   </td>
                   <td className="px-3.5 py-2.5 text-[13px] text-body border-b border-line group-last:border-b-0 group-hover:bg-surface-hover">
                     {getDescription(a)}
